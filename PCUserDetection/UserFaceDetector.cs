@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,11 @@ namespace PCUserDetection
 {
     public partial class UserFaceDetector : Form
     {
-        FilterInfoCollection filterInfoCollection;
-        VideoCaptureDevice videoCaptureDevice;
+        // Objects from AForge Framework
+        FilterInfoCollection filterInfoCollection; // will store the available camera devices
+        VideoCaptureDevice videoCaptureDevice; // will capture video from the webcam
+        Bitmap currentFrame; // current frame from webcam
+
 
         public UserFaceDetector()
         {
@@ -24,18 +28,64 @@ namespace PCUserDetection
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
         {
-            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            foreach (FilterInfo Device in filterInfoCollection)
-                cbCamera.Items.Add(Device.Name);
-            cbCamera.SelectedIndex = 0;
-            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex].MonikerString);
-            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
-            videoCaptureDevice.Start();
+            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
+
+            if(filterInfoCollection.Count == 0)
+            {
+                MessageBox.Show("No camera devices found.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            } 
+            else
+            {
+                // will insert all camera devices to cbCamera combobox
+                foreach (FilterInfo Device in filterInfoCollection)
+                    cbCamera.Items.Add(Device.Name);
+                cbCamera.SelectedIndex = 0;
+
+                videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex].MonikerString);
+                videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+                videoCaptureDevice.Start();
+            }
+  
         }
 
         private void FinalFrame_NewFrame(object sender, NewFrameEventArgs e)
         {
-            pbCamera.Image = (Bitmap)e.Frame.Clone();
+            currentFrame = (Bitmap)e.Frame.Clone();
+
+            if(pbCamera.InvokeRequired)
+            {
+                pbCamera.Invoke(new Action(() => {
+                    if(pbCamera.Image != null) pbCamera.Image.Dispose();
+                    pbCamera.Image = currentFrame; // will display camera feed on the screen using picture box
+                }));
+            } 
+            else
+            {
+                if (pbCamera.Image != null) pbCamera.Image.Dispose();
+                pbCamera.Image = currentFrame; // will display camera feed on the screen using picture box
+            }    
+        }
+
+        private void btnCapture_Click(object sender, EventArgs e)
+        {
+            if(currentFrame != null)
+            {
+                string filename = "Jc.jpeg";
+                string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\CapturedImages";
+                string filepath = System.IO.Path.Combine(directory, filename);
+                currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                MessageBox.Show("Image captured and saved.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void UserFaceDetector_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // will stop the camera capture if the app will be closed
+            if (videoCaptureDevice.IsRunning)
+            {
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
+            }
         }
     }
 }
