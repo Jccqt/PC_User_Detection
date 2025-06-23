@@ -32,6 +32,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.pbCamera = new System.Windows.Forms.PictureBox();
             this.btnCapture = new System.Windows.Forms.Button();
+            this.btnRestart = new System.Windows.Forms.Button();
+            this.lblImageFileDir = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbCamera)).BeginInit();
             this.SuspendLayout();
             // 
@@ -68,7 +70,7 @@
             // btnCapture
             // 
             this.btnCapture.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCapture.Location = new System.Drawing.Point(289, 472);
+            this.btnCapture.Location = new System.Drawing.Point(410, 487);
             this.btnCapture.Name = "btnCapture";
             this.btnCapture.Size = new System.Drawing.Size(113, 36);
             this.btnCapture.TabIndex = 3;
@@ -76,11 +78,36 @@
             this.btnCapture.UseVisualStyleBackColor = true;
             this.btnCapture.Click += new System.EventHandler(this.btnCapture_Click);
             // 
+            // btnRestart
+            // 
+            this.btnRestart.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRestart.Location = new System.Drawing.Point(156, 487);
+            this.btnRestart.Name = "btnRestart";
+            this.btnRestart.Size = new System.Drawing.Size(113, 36);
+            this.btnRestart.TabIndex = 4;
+            this.btnRestart.Text = "Restart";
+            this.btnRestart.UseVisualStyleBackColor = true;
+            this.btnRestart.Click += new System.EventHandler(this.btnRestart_Click);
+            // 
+            // lblImageFileDir
+            // 
+            this.lblImageFileDir.AutoSize = true;
+            this.lblImageFileDir.Font = new System.Drawing.Font("Poppins", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblImageFileDir.Location = new System.Drawing.Point(72, 449);
+            this.lblImageFileDir.Name = "lblImageFileDir";
+            this.lblImageFileDir.Size = new System.Drawing.Size(113, 22);
+            this.lblImageFileDir.TabIndex = 5;
+            this.lblImageFileDir.Text = "<Image file label>";
+            this.lblImageFileDir.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblImageFileDir.Visible = false;
+            // 
             // UserFaceDetector
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 535);
+            this.Controls.Add(this.lblImageFileDir);
+            this.Controls.Add(this.btnRestart);
             this.Controls.Add(this.btnCapture);
             this.Controls.Add(this.pbCamera);
             this.Controls.Add(this.label1);
@@ -101,6 +128,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox pbCamera;
         private System.Windows.Forms.Button btnCapture;
+        private System.Windows.Forms.Button btnRestart;
+        private System.Windows.Forms.Label lblImageFileDir;
     }
 }
 
