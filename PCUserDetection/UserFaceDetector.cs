@@ -70,22 +70,26 @@ namespace PCUserDetection
         {
             if(currentFrame != null)
             {
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
                 string filename = "Jc.jpeg";
                 string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\CapturedImages";
                 string filepath = System.IO.Path.Combine(directory, filename);
                 currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                MessageBox.Show("Image captured and saved.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                lblImageFileDir.Text = "Image has been captured and saved on " + directory + "\\" + filename;
+                lblImageFileDir.Visible = true;
             }
+        }
+
+        private void btnRestart_Click(object sender, EventArgs e)
+        {
+            lblImageFileDir.Visible = false;
+            videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
+            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
         }
 
         private void UserFaceDetector_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // will stop the camera capture if the app will be closed
-            if (videoCaptureDevice.IsRunning)
-            {
-                videoCaptureDevice.SignalToStop();
-                videoCaptureDevice.WaitForStop();
-            }
+            Environment.Exit(0);
         }
     }
 }
