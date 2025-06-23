@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace PCUserDetection
 {
@@ -84,10 +85,12 @@ namespace PCUserDetection
                 else
                 {
                     lblAlert.Text = "The user was anonymous";
+                    LockWorkStation();
                 }
             }
         }
-
+        [DllImport("user32.dll")]
+        public static extern bool LockWorkStation();
         private bool RunFaceAiSharpConsole()
         {
             bool result = false;
