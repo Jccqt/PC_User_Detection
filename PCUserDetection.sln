@@ -5,6 +5,10 @@ VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCUserDetection", "PCUserDetection\PCUserDetection.csproj", "{81721AAB-C2E5-4541-B411-F0693B9E8B3F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibrary1\ClassLibrary1.csproj", "{AFD90B89-8928-493B-8C1B-6A525558AD7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaceDetection", "FaceDetection\FaceDetection.csproj", "{76793A81-9B24-415B-A58A-3D88143A4F5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{81721AAB-C2E5-4541-B411-F0693B9E8B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81721AAB-C2E5-4541-B411-F0693B9E8B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81721AAB-C2E5-4541-B411-F0693B9E8B3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFD90B89-8928-493B-8C1B-6A525558AD7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFD90B89-8928-493B-8C1B-6A525558AD7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFD90B89-8928-493B-8C1B-6A525558AD7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFD90B89-8928-493B-8C1B-6A525558AD7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76793A81-9B24-415B-A58A-3D88143A4F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76793A81-9B24-415B-A58A-3D88143A4F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76793A81-9B24-415B-A58A-3D88143A4F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76793A81-9B24-415B-A58A-3D88143A4F5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

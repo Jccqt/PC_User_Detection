@@ -34,7 +34,7 @@
             this.btnDetect = new System.Windows.Forms.Button();
             this.btnRestart = new System.Windows.Forms.Button();
             this.btnAddUser = new System.Windows.Forms.Button();
-            this.lblImageFileDir = new System.Windows.Forms.Label();
+            this.lblAlert = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbCamera)).BeginInit();
             this.SuspendLayout();
             // 
@@ -101,17 +101,17 @@
             this.btnAddUser.UseVisualStyleBackColor = true;
             this.btnAddUser.Click += new System.EventHandler(this.btnAddUser_Click);
             // 
-            // lblImageFileDir
+            // lblAlert
             // 
-            this.lblImageFileDir.AutoSize = true;
-            this.lblImageFileDir.Font = new System.Drawing.Font("Poppins", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblImageFileDir.Location = new System.Drawing.Point(72, 449);
-            this.lblImageFileDir.Name = "lblImageFileDir";
-            this.lblImageFileDir.Size = new System.Drawing.Size(113, 22);
-            this.lblImageFileDir.TabIndex = 5;
-            this.lblImageFileDir.Text = "<Image file label>";
-            this.lblImageFileDir.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lblImageFileDir.Visible = false;
+            this.lblAlert.AutoSize = true;
+            this.lblAlert.Font = new System.Drawing.Font("Poppins", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAlert.Location = new System.Drawing.Point(312, 449);
+            this.lblAlert.Name = "lblAlert";
+            this.lblAlert.Size = new System.Drawing.Size(49, 22);
+            this.lblAlert.TabIndex = 5;
+            this.lblAlert.Text = "<Alert>";
+            this.lblAlert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblAlert.Visible = false;
             // 
             // UserFaceDetector
             // 
@@ -119,13 +119,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 535);
             this.Controls.Add(this.btnAddUser);
-            this.Controls.Add(this.lblImageFileDir);
+            this.Controls.Add(this.lblAlert);
             this.Controls.Add(this.btnRestart);
             this.Controls.Add(this.btnDetect);
             this.Controls.Add(this.pbCamera);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbCamera);
             this.Name = "UserFaceDetector";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PC User Face Detector";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserFaceDetector_FormClosing);
             this.Load += new System.EventHandler(this.UserFaceDetector_Load);
@@ -143,7 +144,7 @@
         private System.Windows.Forms.Button btnDetect;
         private System.Windows.Forms.Button btnRestart;
         private System.Windows.Forms.Button btnAddUser;
-        private System.Windows.Forms.Label lblImageFileDir;
+        private System.Windows.Forms.Label lblAlert;
     }
 }
 
