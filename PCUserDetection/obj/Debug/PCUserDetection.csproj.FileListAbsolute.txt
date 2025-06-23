@@ -34,3 +34,4 @@ E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.cspro
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDe.FF27DBBB.Up2Date
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.exe
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.pdb
+E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.AddUser.resources
