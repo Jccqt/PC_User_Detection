@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -14,27 +13,26 @@ using System.Windows.Forms;
 
 namespace PCUserDetection
 {
-    public partial class UserFaceDetector : Form
+    public partial class AddUser : Form
     {
         // Objects from AForge Framework
         FilterInfoCollection filterInfoCollection; // will store the available camera devices
         VideoCaptureDevice videoCaptureDevice; // will capture video from the webcam
         Bitmap currentFrame; // current frame from webcam
-        AddUser addUser;
-
-        public UserFaceDetector()
+        UserFaceDetector userFaceDetector;
+        public AddUser()
         {
             InitializeComponent();
         }
 
-        private void UserFaceDetector_Load(object sender, EventArgs e)
+        private void AddUser_Load(object sender, EventArgs e)
         {
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
 
-            if(filterInfoCollection.Count == 0)
+            if (filterInfoCollection.Count == 0)
             {
                 MessageBox.Show("No camera devices found.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            } 
+            }
             else
             {
                 // will insert all camera devices to cbCamera combobox
@@ -46,71 +44,40 @@ namespace PCUserDetection
                 videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
                 videoCaptureDevice.Start();
             }
-  
         }
 
         private void FinalFrame_NewFrame(object sender, NewFrameEventArgs e)
         {
+            
             currentFrame = (Bitmap)e.Frame.Clone();
 
-            if(pbCamera.InvokeRequired)
+            if (pbCamera.InvokeRequired)
             {
-                pbCamera.Invoke(new Action(() => {
-                    if(pbCamera.Image != null) pbCamera.Image.Dispose();
+                pbCamera.Invoke(new Action(() =>
+                {
+                    if (pbCamera.Image != null) pbCamera.Image.Dispose();
                     pbCamera.Image = currentFrame; // will display camera feed on the screen using picture box
                 }));
-            } 
+            }
             else
             {
                 if (pbCamera.Image != null) pbCamera.Image.Dispose();
                 pbCamera.Image = currentFrame; // will display camera feed on the screen using picture box
-            }    
+            }
         }
 
-        private void btnDetect_Click(object sender, EventArgs e)
+        private void btnAdd_Click(object sender, EventArgs e)
         {
-            if(currentFrame != null)
+            if (currentFrame != null)
             {
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
-                string filename = "Anonymous.jpeg";
+                string filename = $"Image_{DateTime.Now:yyyyMMdd_HHmmss}.jpeg";
                 string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\CapturedImages";
                 string filepath = System.IO.Path.Combine(directory, filename);
                 currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                lblImageFileDir.Text = "Image has been captured and saved on " + directory + "\\" + filename;
                 lblImageFileDir.Visible = true;
-
-                if (RunFaceAiSharpConsole())
-                {
-                    lblImageFileDir.Text = "The user was identified";
-                }
-                else
-                {
-                    lblImageFileDir.Text = "The user was not identified";
-                }
             }
-        }
-
-        private bool RunFaceAiSharpConsole()
-        {
-            bool result = false;
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\FaceAIDetection\FaceAIDetection\bin\Debug\net8.0\FaceAIDetection.exe",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (Process process = Process.Start(psi))
-            {
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-
-                if(bool.TryParse(output.Trim(), out bool res))
-                {
-                    result = res;
-                }
-            }
-            return result;
         }
 
         private void btnRestart_Click(object sender, EventArgs e)
@@ -118,23 +85,24 @@ namespace PCUserDetection
             lblImageFileDir.Visible = false;
             videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+
         }
 
-        private void UserFaceDetector_FormClosing(object sender, FormClosingEventArgs e)
+        private void AddUser_FormClosing(object sender, FormClosingEventArgs e)
         {
             Environment.Exit(0);
         }
 
-        private void btnAddUser_Click(object sender, EventArgs e)
+        private void btnReturn_Click(object sender, EventArgs e)
         {
             videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             videoCaptureDevice.Stop();
 
-            if (addUser == null)
+            if(userFaceDetector == null)
             {
-                addUser = new AddUser();
+                userFaceDetector = new UserFaceDetector();
             }
-            addUser.Show();
+            userFaceDetector.Show();
             this.Hide();
         }
     }
