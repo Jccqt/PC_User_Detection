@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "E:\\C# Projects\\PC_User_Detection\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|e:\\c# projects\\pc_user_detection\\pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{76793A81-9B24-415B-A58A-3D88143A4F5A}|FaceDetection\\FaceDetection.csproj|e:\\c# projects\\pc_user_detection\\facedetection\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76793A81-9B24-415B-A58A-3D88143A4F5A}|FaceDetection\\FaceDetection.csproj|solutionrelative:facedetection\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|e:\\c# projects\\pc_user_detection\\pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,6 +35,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\FaceDetection\\Program.cs",
+              "RelativeDocumentMoniker": "FaceDetection\\Program.cs",
+              "ToolTip": "E:\\C# Projects\\PC_User_Detection\\FaceDetection\\Program.cs",
+              "RelativeToolTip": "FaceDetection\\Program.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwCgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-23T07:31:11.623Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserFaceDetector.cs",
+              "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\UserFaceDetector.cs",
+              "RelativeDocumentMoniker": "PCUserDetection\\UserFaceDetector.cs",
+              "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\UserFaceDetector.cs",
+              "RelativeToolTip": "PCUserDetection\\UserFaceDetector.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAwwE0AAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-23T07:30:23.083Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "UserFaceDetector.cs [Design]",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\UserFaceDetector.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\UserFaceDetector.cs",

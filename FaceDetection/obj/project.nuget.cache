@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "dgSpecHash": "IPN3DjqGRCg=",
+  "success": true,
+  "projectFilePath": "E:\\C# Projects\\PC_User_Detection\\FaceDetection\\FaceDetection.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jcbca\\.nuget\\packages\\communitytoolkit.diagnostics\\8.2.2\\communitytoolkit.diagnostics.8.2.2.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\faceaisharp\\0.5.23\\faceaisharp.0.5.23.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\faceaisharp.bundle\\0.5.23\\faceaisharp.bundle.0.5.23.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\faceaisharp.models.arcface.lresnet100e-ir-int8\\0.20230419.1\\faceaisharp.models.arcface.lresnet100e-ir-int8.0.20230419.1.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\faceaisharp.models.openvino.open-closed-eye-0001\\0.20220116.2\\faceaisharp.models.openvino.open-closed-eye-0001.0.20220116.2.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\faceaisharp.models.scrfd.2dot5g_kps\\0.20230205.2\\faceaisharp.models.scrfd.2dot5g_kps.0.20230205.2.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\mathnet.numerics\\5.0.0\\mathnet.numerics.5.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.0\\microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0\\microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.options\\8.0.0\\microsoft.extensions.options.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.ml.onnxruntime\\1.22.0\\microsoft.ml.onnxruntime.1.22.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\microsoft.ml.onnxruntime.managed\\1.22.0\\microsoft.ml.onnxruntime.managed.1.22.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\numsharp\\0.30.0\\numsharp.0.30.0.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\simplesimd\\3.3.1\\simplesimd.3.3.1.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\sixlabors.fonts\\2.0.1\\sixlabors.fonts.2.0.1.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\sixlabors.imagesharp\\3.1.2\\sixlabors.imagesharp.3.1.2.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\sixlabors.imagesharp.drawing\\2.1.1\\sixlabors.imagesharp.drawing.2.1.1.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\jcbca\\.nuget\\packages\\system.numerics.tensors\\9.0.0\\system.numerics.tensors.9.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

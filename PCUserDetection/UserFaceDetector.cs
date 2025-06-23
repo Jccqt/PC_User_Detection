@@ -71,20 +71,19 @@ namespace PCUserDetection
         {
             if(currentFrame != null)
             {
-                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
                 string filename = "Anonymous.jpeg";
-                string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\CapturedImages";
+                string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\AnonymousImages";
                 string filepath = System.IO.Path.Combine(directory, filename);
                 currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                lblImageFileDir.Visible = true;
+                lblAlert.Visible = true;
 
                 if (RunFaceAiSharpConsole())
                 {
-                    lblImageFileDir.Text = "The user was identified";
+                    lblAlert.Text = "The user was verified";
                 }
                 else
                 {
-                    lblImageFileDir.Text = "The user was not identified";
+                    lblAlert.Text = "The user was anonymous";
                 }
             }
         }
@@ -94,7 +93,7 @@ namespace PCUserDetection
             bool result = false;
             ProcessStartInfo psi = new ProcessStartInfo
             {
-                FileName = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\FaceAIDetection\FaceAIDetection\bin\Debug\net8.0\FaceAIDetection.exe",
+                FileName = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"..\..\FaceDetection\bin\Debug\net8.0\FaceDetection.exe",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
@@ -115,7 +114,7 @@ namespace PCUserDetection
 
         private void btnRestart_Click(object sender, EventArgs e)
         {
-            lblImageFileDir.Visible = false;
+            lblAlert.Visible = false;
             videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
         }
