@@ -48,7 +48,6 @@ namespace PCUserDetection
 
         private void FinalFrame_NewFrame(object sender, NewFrameEventArgs e)
         {
-            
             currentFrame = (Bitmap)e.Frame.Clone();
 
             if (pbCamera.InvokeRequired)
@@ -104,6 +103,20 @@ namespace PCUserDetection
             }
             userFaceDetector.Show();
             this.Hide();
+        }
+
+        private void cbCamera_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // will restart the image capture if the camera being used was changed
+            if (videoCaptureDevice != null)
+            {
+                videoCaptureDevice.Stop();
+                videoCaptureDevice = null;
+                pbCamera.Image = null;
+                videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex].MonikerString);
+                videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+                videoCaptureDevice.Start();
+            }
         }
     }
 }

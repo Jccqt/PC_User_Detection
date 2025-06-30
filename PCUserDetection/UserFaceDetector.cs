@@ -15,7 +15,6 @@ using System.Runtime.InteropServices;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using DotNetEnv;
 
 namespace PCUserDetection
 {
@@ -34,7 +33,6 @@ namespace PCUserDetection
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
         {
-            Env.Load();
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
 
             if(filterInfoCollection.Count == 0)
