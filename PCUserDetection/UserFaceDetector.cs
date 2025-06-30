@@ -12,6 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using DotNetEnv;
 
 namespace PCUserDetection
 {
@@ -30,6 +34,7 @@ namespace PCUserDetection
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
         {
+            Env.Load();
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
 
             if(filterInfoCollection.Count == 0)
@@ -87,12 +92,11 @@ namespace PCUserDetection
                 {
                     lblAlert.Text = "The user was anonymous";
                     lblAlert.ForeColor = System.Drawing.Color.Red;
-                    LockWorkStation();
+                    getLocation();
                 }
             }
         }
-        [DllImport("user32.dll")]
-        public static extern bool LockWorkStation();
+
         private bool RunFaceAiSharpConsole()
         {
             bool result = false;
@@ -155,5 +159,38 @@ namespace PCUserDetection
                 videoCaptureDevice.Start();
             }
         }
+
+        private async Task getLocation()
+        {
+            string token = Environment.GetEnvironmentVariable("IPINFO_TOKEN");
+            
+            using (HttpClient client = new HttpClient())
+            {
+                string url = $"https://ipinfo.io?token={token}";
+                string json = await client.GetStringAsync(url);
+                IpInfoResponse location = JsonConvert.DeserializeObject<IpInfoResponse>(json);
+
+                Console.WriteLine($"IP: {location.ip}");
+                Console.WriteLine($"City: {location.city}");
+                Console.WriteLine($"Region: {location.region}");
+                Console.WriteLine($"Country: {location.country}");
+                Console.WriteLine($"Coordinates: {location.loc}");
+                Console.WriteLine($"Postal: {location.postal}");
+                Console.WriteLine($"TimeZone: {location.timezone}");
+                Console.WriteLine($"ISP: {location.org}");
+            }
+        }
+    }
+
+    public class IpInfoResponse
+    {
+        public string ip { get; set; }
+        public string city { get; set; }
+        public string region { get; set; }
+        public string country { get; set; }
+        public string loc { get; set; } // latitude and longitude
+        public string org { get; set; } // ISP
+        public string postal { get; set; }
+        public string timezone { get; set; }
     }
 }

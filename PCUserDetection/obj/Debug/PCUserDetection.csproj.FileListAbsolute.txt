@@ -35,3 +35,16 @@ E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDe.FF27DBBB.Up2
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.exe
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.pdb
 E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.AddUser.resources
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Newtonsoft.Json.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Newtonsoft.Json.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\DotNetEnv.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Configuration.Abstractions.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Configuration.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Primitives.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Sprache.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Configuration.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Configuration.Abstractions.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Primitives.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Sprache.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
