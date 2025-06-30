@@ -81,10 +81,12 @@ namespace PCUserDetection
                 if (RunFaceAiSharpConsole())
                 {
                     lblAlert.Text = "The user was verified";
+                    lblAlert.ForeColor = System.Drawing.Color.Green;
                 }
                 else
                 {
                     lblAlert.Text = "The user was anonymous";
+                    lblAlert.ForeColor = System.Drawing.Color.Red;
                     LockWorkStation();
                 }
             }
@@ -138,6 +140,20 @@ namespace PCUserDetection
             }
             addUser.Show();
             this.Hide();
+        }
+
+        private void cbCamera_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // will restart the image capture if the camera being used was changed
+            if(videoCaptureDevice != null)
+            {
+                videoCaptureDevice.Stop();
+                videoCaptureDevice = null;
+                pbCamera.Image = null;
+                videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex].MonikerString);
+                videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+                videoCaptureDevice.Start();
+            }
         }
     }
 }
