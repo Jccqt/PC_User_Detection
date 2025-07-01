@@ -22,5 +22,17 @@ namespace PCUserDetection.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string UserEmail {
+            get {
+                return ((string)(this["UserEmail"]));
+            }
+            set {
+                this["UserEmail"] = value;
+            }
+        }
     }
 }

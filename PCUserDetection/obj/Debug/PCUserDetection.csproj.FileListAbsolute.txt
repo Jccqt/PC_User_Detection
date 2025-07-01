@@ -47,3 +47,4 @@ E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Microsoft.Extensions.Primitives.xml
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\Sprache.xml
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.Email.resources
