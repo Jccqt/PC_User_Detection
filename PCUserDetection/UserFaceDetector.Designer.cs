@@ -35,6 +35,7 @@
             this.btnRestart = new System.Windows.Forms.Button();
             this.btnAddUser = new System.Windows.Forms.Button();
             this.lblAlert = new System.Windows.Forms.Label();
+            this.btnSetEmail = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbCamera)).BeginInit();
             this.SuspendLayout();
             // 
@@ -114,11 +115,23 @@
             this.lblAlert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblAlert.Visible = false;
             // 
+            // btnSetEmail
+            // 
+            this.btnSetEmail.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSetEmail.Location = new System.Drawing.Point(694, 147);
+            this.btnSetEmail.Name = "btnSetEmail";
+            this.btnSetEmail.Size = new System.Drawing.Size(113, 36);
+            this.btnSetEmail.TabIndex = 7;
+            this.btnSetEmail.Text = "Set email";
+            this.btnSetEmail.UseVisualStyleBackColor = true;
+            this.btnSetEmail.Click += new System.EventHandler(this.btnSetEmail_Click);
+            // 
             // UserFaceDetector
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 535);
+            this.Controls.Add(this.btnSetEmail);
             this.Controls.Add(this.btnAddUser);
             this.Controls.Add(this.lblAlert);
             this.Controls.Add(this.btnRestart);
@@ -146,6 +159,7 @@
         private System.Windows.Forms.Button btnRestart;
         private System.Windows.Forms.Button btnAddUser;
         private System.Windows.Forms.Label lblAlert;
+        private System.Windows.Forms.Button btnSetEmail;
     }
 }
 

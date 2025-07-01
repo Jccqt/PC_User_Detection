@@ -25,6 +25,7 @@ namespace PCUserDetection
         VideoCaptureDevice videoCaptureDevice; // will capture video from the webcam
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
+        Email email;
 
         public UserFaceDetector()
         {
@@ -177,6 +178,16 @@ namespace PCUserDetection
                 Console.WriteLine($"TimeZone: {location.timezone}");
                 Console.WriteLine($"ISP: {location.org}");
             }
+        }
+
+        private void btnSetEmail_Click(object sender, EventArgs e)
+        {
+            if(email == null)
+            {
+                email = new Email();
+            }
+            email.Show();
+            this.Hide();
         }
     }
 
