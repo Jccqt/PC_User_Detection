@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Auth.OAuth2;
@@ -26,6 +25,7 @@ namespace PCUserDetection
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
         Email email;
+        Images images;
 
         static string[] Scopes = { GmailService.Scope.GmailSend };
         static string ApplicationName = "PCUserDetection";
@@ -174,6 +174,7 @@ namespace PCUserDetection
                 string json = await client.GetStringAsync(url);
                 IpInfoResponse location = JsonConvert.DeserializeObject<IpInfoResponse>(json);
 
+                // for debugging purposes
                 Console.WriteLine($"IP: {location.ip}");
                 Console.WriteLine($"City: {location.city}");
                 Console.WriteLine($"Region: {location.region}");
@@ -183,6 +184,7 @@ namespace PCUserDetection
                 Console.WriteLine($"TimeZone: {location.timezone}");
                 Console.WriteLine($"ISP: {location.org}");
 
+                // will return the email message
                 return $@"
                     Your device was being accessed by an anonymous user!
                     
@@ -254,6 +256,17 @@ namespace PCUserDetection
 
                 Console.WriteLine("Email sent!");
             }
+        }
+
+        private void btnImages_Click(object sender, EventArgs e)
+        {
+            if(images == null)
+            {
+                images = new Images();
+            }
+
+            images.Show();
+            this.Hide();
         }
     }
 

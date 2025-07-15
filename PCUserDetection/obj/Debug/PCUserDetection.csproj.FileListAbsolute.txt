@@ -74,3 +74,5 @@ E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\MimeKit.xml
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Buffers.xml
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Memory.xml
 E:\C# Projects\PC_User_Detection\PCUserDetection\bin\Debug\System.Numerics.Vectors.xml
+E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.Image.resources
+E:\C# Projects\PC_User_Detection\PCUserDetection\obj\Debug\PCUserDetection.Images.resources
