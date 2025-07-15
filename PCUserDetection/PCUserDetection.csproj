@@ -260,6 +260,18 @@
     <Compile Include="Email.Designer.cs">
       <DependentUpon>Email.cs</DependentUpon>
     </Compile>
+    <Compile Include="Image.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Image.Designer.cs">
+      <DependentUpon>Image.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Images.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Images.Designer.cs">
+      <DependentUpon>Images.cs</DependentUpon>
+    </Compile>
     <Compile Include="UserFaceDetector.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -273,6 +285,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Email.resx">
       <DependentUpon>Email.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Image.resx">
+      <DependentUpon>Image.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images.resx">
+      <DependentUpon>Images.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UserFaceDetector.resx">
       <DependentUpon>UserFaceDetector.cs</DependentUpon>
