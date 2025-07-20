@@ -36,6 +36,7 @@ namespace PCUserDetection
             else
             {
                 // will insert all camera devices to cbCamera combobox
+                cbCamera.Items.Add("Select Camera"); // Default selection
                 foreach (FilterInfo Device in filterInfoCollection)
                     cbCamera.Items.Add(Device.Name);
                 cbCamera.SelectedIndex = 0;
@@ -107,13 +108,22 @@ namespace PCUserDetection
 
         private void cbCamera_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // will restart the image capture if the camera being used was changed
-            if (videoCaptureDevice != null)
+            // will stop the image capture if the camera being used was changed
+            // and will only stop if the videoCaptureDevice is not null and is running
+            if (videoCaptureDevice != null && videoCaptureDevice.IsRunning)
             {
-                videoCaptureDevice.Stop();
+                // will stop the image capture from getting input
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
                 videoCaptureDevice = null;
                 pbCamera.Image = null;
-                videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex].MonikerString);
+            }
+
+            // will only restart if there is a selected camera
+            if (cbCamera.Text != "Select Camera")
+            {
+                videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cbCamera.SelectedIndex - 1].MonikerString);
                 videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
                 videoCaptureDevice.Start();
             }
