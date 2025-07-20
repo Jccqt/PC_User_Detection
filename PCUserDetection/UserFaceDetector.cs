@@ -140,10 +140,12 @@ namespace PCUserDetection
 
         private void btnAddUser_Click(object sender, EventArgs e)
         {
-            if(cbCamera.SelectedIndex != 0)
+            if(cbCamera.SelectedIndex > 0)
             {
+                // will stop image capture on main page when going to Add User page
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
-                videoCaptureDevice.Stop();
             }
 
             if (addUser == null)
@@ -216,7 +218,15 @@ namespace PCUserDetection
 
         private void btnSetEmail_Click(object sender, EventArgs e)
         {
-            if(email == null)
+            if (cbCamera.SelectedIndex > 0)
+            {
+                // will stop image capture on main page when going to Email page
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
+            }
+
+            if (email == null)
             {
                 email = new Email();
             }
@@ -273,7 +283,15 @@ namespace PCUserDetection
 
         private void btnImages_Click(object sender, EventArgs e)
         {
-            if(images == null)
+            if (cbCamera.SelectedIndex > 0)
+            {
+                // will stop image capture on main page when going to Images page
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
+            }
+
+            if (images == null)
             {
                 images = new Images();
             }

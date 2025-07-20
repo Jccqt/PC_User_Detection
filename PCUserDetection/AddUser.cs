@@ -85,7 +85,6 @@ namespace PCUserDetection
             lblImageFileDir.Visible = false;
             videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
-
         }
 
         private void AddUser_FormClosing(object sender, FormClosingEventArgs e)
@@ -95,8 +94,13 @@ namespace PCUserDetection
 
         private void btnReturn_Click(object sender, EventArgs e)
         {
-            videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
-            videoCaptureDevice.Stop();
+            if(cbCamera.SelectedIndex > 0)
+            {
+                // will stop image capture on Add User page when returning to main page
+                videoCaptureDevice.SignalToStop();
+                videoCaptureDevice.WaitForStop();
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
+            }
 
             if(userFaceDetector == null)
             {
