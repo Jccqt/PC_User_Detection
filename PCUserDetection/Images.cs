@@ -21,17 +21,24 @@ namespace PCUserDetection
 
         private void Images_Load(object sender, EventArgs e)
         {
+            RefreshImages();
+        }
+
+        public void RefreshImages()
+        {
+            flpImages.Controls.Clear();
+
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
             string fullPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\PCUserDetection\CapturedImages\"));
 
             string[] imageFiles = Directory.GetFiles(fullPath, "*.*").
                 Where(file => file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            foreach(string imageFile in imageFiles)
+            foreach (string imageFile in imageFiles)
             {
-                Console.Write(imageFile);
                 var image = new Image();
 
+                image.btnDelete.Tag = imageFile;
                 image.pbImage.ImageLocation = imageFile;
                 image.pbImage.SizeMode = PictureBoxSizeMode.StretchImage;
 
