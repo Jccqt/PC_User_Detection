@@ -25,7 +25,6 @@ namespace PCUserDetection
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
         Email email;
-        Images images;
 
         static string[] Scopes = { GmailService.Scope.GmailSend };
         static string ApplicationName = "PCUserDetection";
@@ -291,12 +290,12 @@ namespace PCUserDetection
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             }
 
-            if (images == null)
+            if (PageObjects.images == null)
             {
-                images = new Images();
+                PageObjects.images = new Images();
             }
 
-            images.Show();
+            PageObjects.images.Show();
             this.Hide();
         }
     }

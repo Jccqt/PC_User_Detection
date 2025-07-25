@@ -13,7 +13,6 @@ namespace PCUserDetection
 {
     public partial class Image : UserControl
     {
-        Images image;
         public Image()
         {
             InitializeComponent();
@@ -30,13 +29,9 @@ namespace PCUserDetection
                 string fullPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\PCUserDetection\CapturedImages\"));
                 File.Delete(Path.Combine(fullPath, btnDelete.Tag.ToString()));
 
-                MessageBox.Show($"Image {btnDelete.Tag.ToString()} has been successfully deleted.");
+                MessageBox.Show($"Image {btnDelete.Tag.ToString()} has been successfully deleted.", "Image Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                if(image != null)
-                {
-                    image.Dispose();
-                }
-                image = new Images();
+                PageObjects.images.RefreshImages();
             }
             Console.WriteLine(btnDelete.Tag.ToString());
         }

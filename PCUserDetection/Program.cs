@@ -20,4 +20,9 @@ namespace PCUserDetection
             Application.Run(new UserFaceDetector());
         }
     }
+
+    public class PageObjects
+    {
+        public static Images images;
+    }
 }

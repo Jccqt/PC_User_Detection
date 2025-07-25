@@ -7,6 +7,18 @@
       "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\image.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|e:\\c# projects\\pc_user_detection\\pcuserdetection\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\images.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\images.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -23,14 +35,6 @@
       "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\image.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|e:\\c# projects\\pc_user_detection\\pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\userfacedetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|E:\\C# Projects\\PC_User_Detection\\pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{81721AAB-C2E5-4541-B411-F0693B9E8B3F}|PCUserDetection\\PCUserDetection.csproj|solutionrelative:pcuserdetection\\adduser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
@@ -42,7 +46,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 262,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,33 +58,46 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Program.cs",
+              "RelativeDocumentMoniker": "PCUserDetection\\Program.cs",
+              "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Program.cs",
+              "RelativeToolTip": "PCUserDetection\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-25T14:03:55.694Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Image.cs",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Image.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\Image.cs",
               "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Image.cs",
               "RelativeToolTip": "PCUserDetection\\Image.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAADwvyYAAAAlAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAADwvyEAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-23T12:52:35.141Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "Images.cs",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Images.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\Images.cs",
               "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Images.cs",
               "RelativeToolTip": "PCUserDetection\\Images.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAIwBcAAAAcAAAAAAAAAA==",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAIwBcAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-13T11:36:02.755Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 3,
               "Title": "AddUser.cs",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\AddUser.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\AddUser.cs",
@@ -88,22 +105,24 @@
               "RelativeToolTip": "PCUserDetection\\AddUser.cs",
               "ViewState": "AgIAAF0AAAAAAAAAAAAmwGUAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-15T00:33:36.746Z"
+              "WhenOpened": "2025-07-15T00:33:36.746Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "AddUser.cs [Design]",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\AddUser.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\AddUser.cs",
               "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\AddUser.cs [Design]",
               "RelativeToolTip": "PCUserDetection\\AddUser.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-15T00:33:35.204Z"
+              "WhenOpened": "2025-07-15T00:33:35.204Z",
+              "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\FaceDetection\\Program.cs",
               "RelativeDocumentMoniker": "FaceDetection\\Program.cs",
@@ -111,24 +130,22 @@
               "RelativeToolTip": "FaceDetection\\Program.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-13T11:35:08.408Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-13T11:35:08.408Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "Image.cs [Design]",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Image.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\Image.cs",
               "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Image.cs [Design]",
               "RelativeToolTip": "PCUserDetection\\Image.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-13T11:32:45.705Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2025-07-13T11:32:45.705Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "Images.cs [Design]",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\Images.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\Images.cs",
@@ -140,13 +157,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "UserFaceDetector.cs",
               "DocumentMoniker": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\UserFaceDetector.cs",
               "RelativeDocumentMoniker": "PCUserDetection\\UserFaceDetector.cs",
               "ToolTip": "E:\\C# Projects\\PC_User_Detection\\PCUserDetection\\UserFaceDetector.cs",
               "RelativeToolTip": "PCUserDetection\\UserFaceDetector.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAADwvyAAAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAABYBAAAAAAAAAAAAwCkBAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-05T11:27:55.107Z",
               "EditorCaption": ""
