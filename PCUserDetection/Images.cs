@@ -13,10 +13,21 @@ namespace PCUserDetection
 {
     public partial class Images : Form
     {
-        UserFaceDetector userFaceDetector;
+        UserFaceDetector userFaceDetector = UserFaceDetector.GetUserFaceDetectorInstance();
+        private static Images imagesInstance;
+
         public Images()
         {
             InitializeComponent();
+        }
+
+        public static Images GetImagesInstance()
+        {
+            if(imagesInstance == null)
+            {
+                imagesInstance = new Images();
+            }
+            return imagesInstance;
         }
 
         private void Images_Load(object sender, EventArgs e)
@@ -48,10 +59,7 @@ namespace PCUserDetection
 
         private void btnReturn_Click(object sender, EventArgs e)
         {
-            if(userFaceDetector == null)
-            {
-                userFaceDetector = new UserFaceDetector();
-            }
+
             userFaceDetector.Show();
             this.Hide();
         }

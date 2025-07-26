@@ -12,10 +12,20 @@ namespace PCUserDetection
 {
     public partial class Email : Form
     {
-        UserFaceDetector userFaceDetector;
+        UserFaceDetector userFaceDetector = UserFaceDetector.GetUserFaceDetectorInstance();
+        private static Email emailInstance;
         public Email()
         {
             InitializeComponent();
+        }
+        
+        public static Email GetEmailInstance()
+        {
+            if(emailInstance == null)
+            {
+                emailInstance = new Email();
+            }
+            return emailInstance;
         }
 
         private void btnSetEmail_Click(object sender, EventArgs e)
@@ -45,10 +55,6 @@ namespace PCUserDetection
 
         private void btnReturn_Click(object sender, EventArgs e)
         {
-            if (userFaceDetector == null)
-            {
-                userFaceDetector = new UserFaceDetector();
-            }
             userFaceDetector.Show();
             this.Hide();
         }

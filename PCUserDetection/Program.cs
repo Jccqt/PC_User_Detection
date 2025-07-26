@@ -17,12 +17,7 @@ namespace PCUserDetection
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new UserFaceDetector());
+            Application.Run(UserFaceDetector.GetUserFaceDetectorInstance());
         }
-    }
-
-    public class PageObjects
-    {
-        public static Images images;
     }
 }
