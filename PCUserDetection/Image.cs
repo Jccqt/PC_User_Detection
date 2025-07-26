@@ -31,7 +31,7 @@ namespace PCUserDetection
 
                 MessageBox.Show($"Image {btnDelete.Tag.ToString()} has been successfully deleted.", "Image Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                PageObjects.images.RefreshImages();
+                Images.GetImagesInstance().RefreshImages();
             }
             Console.WriteLine(btnDelete.Tag.ToString());
         }

@@ -25,6 +25,8 @@ namespace PCUserDetection
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
         Email email;
+        Images images;
+        private static UserFaceDetector userFaceDetectorInstance;
 
         static string[] Scopes = { GmailService.Scope.GmailSend };
         static string ApplicationName = "PCUserDetection";
@@ -32,10 +34,25 @@ namespace PCUserDetection
         public UserFaceDetector()
         {
             InitializeComponent();
+            
+        }
+
+        public static UserFaceDetector GetUserFaceDetectorInstance()
+        {
+            if(userFaceDetectorInstance == null)
+            {
+                userFaceDetectorInstance = new UserFaceDetector();
+            }
+            return userFaceDetectorInstance;
         }
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
         {
+            // Initializes singleton for these classes when UserFaceDetector page loads
+            addUser = AddUser.GetAddUserInstance();
+            email = Email.GetEmailInstance();
+            images = Images.GetImagesInstance();
+
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
 
             if(filterInfoCollection.Count == 0)
@@ -146,11 +163,6 @@ namespace PCUserDetection
                 videoCaptureDevice.WaitForStop();
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             }
-
-            if (addUser == null)
-            {
-                addUser = new AddUser();
-            }
             addUser.Show();
             this.Hide();
         }
@@ -224,11 +236,6 @@ namespace PCUserDetection
                 videoCaptureDevice.WaitForStop();
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             }
-
-            if (email == null)
-            {
-                email = new Email();
-            }
             email.Show();
             this.Hide();
         }
@@ -290,12 +297,7 @@ namespace PCUserDetection
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             }
 
-            if (PageObjects.images == null)
-            {
-                PageObjects.images = new Images();
-            }
-
-            PageObjects.images.Show();
+            images.Show();
             this.Hide();
         }
     }

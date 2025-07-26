@@ -19,10 +19,20 @@ namespace PCUserDetection
         FilterInfoCollection filterInfoCollection; // will store the available camera devices
         VideoCaptureDevice videoCaptureDevice; // will capture video from the webcam
         Bitmap currentFrame; // current frame from webcam
-        UserFaceDetector userFaceDetector;
+        UserFaceDetector userFaceDetector = UserFaceDetector.GetUserFaceDetectorInstance();
+        private static AddUser addUserInstance;
         public AddUser()
         {
             InitializeComponent();
+        }
+
+        public static AddUser GetAddUserInstance()
+        {
+            if (addUserInstance == null)
+            {
+                addUserInstance = new AddUser();
+            }
+            return addUserInstance;
         }
 
         private void AddUser_Load(object sender, EventArgs e)
@@ -102,10 +112,6 @@ namespace PCUserDetection
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
             }
 
-            if(userFaceDetector == null)
-            {
-                userFaceDetector = new UserFaceDetector();
-            }
             userFaceDetector.Show();
             this.Hide();
         }
