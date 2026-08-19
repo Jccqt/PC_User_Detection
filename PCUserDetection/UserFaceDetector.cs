@@ -8,12 +8,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
 using Newtonsoft.Json;
-using Google.Apis.Gmail.v1;
-using Google.Apis.Auth.OAuth2;
-using System.Threading;
-using Google.Apis.Util.Store;
-using Google.Apis.Services;
-using MimeKit;
 
 namespace PCUserDetection
 {
@@ -24,12 +18,8 @@ namespace PCUserDetection
         VideoCaptureDevice videoCaptureDevice; // will capture video from the webcam
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
-        Email email;
         Images images;
         private static UserFaceDetector userFaceDetectorInstance;
-
-        static string[] Scopes = { GmailService.Scope.GmailSend };
-        static string ApplicationName = "PCUserDetection";
 
         public UserFaceDetector()
         {
@@ -50,7 +40,6 @@ namespace PCUserDetection
         {
             // Initializes singleton for these classes when UserFaceDetector page loads
             addUser = AddUser.GetAddUserInstance();
-            email = Email.GetEmailInstance();
             images = Images.GetImagesInstance();
 
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
@@ -112,8 +101,7 @@ namespace PCUserDetection
                     lblAlert.Text = "The user was anonymous";
                     lblAlert.ForeColor = System.Drawing.Color.Red;
                     string deviceLocation = await getLocation();
-                    var service = AuthenticateGmail();
-                    SendEmail(service, "me", Properties.Settings.Default.UserEmail, "Anonymous user", deviceLocation);
+                    Console.WriteLine(deviceLocation);
                 }
             }
         }
@@ -210,7 +198,7 @@ namespace PCUserDetection
                 Console.WriteLine($"TimeZone: {location.timezone}");
                 Console.WriteLine($"ISP: {location.org}");
 
-                // will return the email message
+                // will return the location details of the device
                 return $@"
                     Your device was being accessed by an anonymous user!
                     
@@ -224,66 +212,6 @@ namespace PCUserDetection
                     Postal: {location.postal}
                     TimeZone: {location.timezone}
                     ISP: {location.org}";
-            }
-        }
-
-        private void btnSetEmail_Click(object sender, EventArgs e)
-        {
-            if (cbCamera.SelectedIndex > 0)
-            {
-                // will stop image capture on main page when going to Email page
-                videoCaptureDevice.SignalToStop();
-                videoCaptureDevice.WaitForStop();
-                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
-            }
-            email.Show();
-            this.Hide();
-        }
-
-        private GmailService AuthenticateGmail()
-        {
-            string credentialsPath = Environment.GetEnvironmentVariable("GMAIL_CREDENTIALS_PATH");
-            string tokenPath = Environment.GetEnvironmentVariable("GMAIL_TOKEN_PATH");
-
-            UserCredential credential;
-
-            using (var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read))
-            {
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    new[] { GmailService.Scope.GmailSend },
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(tokenPath, true)).Result;
-            }
-
-            return new GmailService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
-            });
-        }
-
-        private void SendEmail(GmailService service, string userID, string to, string subject, string bodyText)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("PCUserDection", "jcbcalayag@gmail.com"));
-            message.To.Add(new MailboxAddress("", to));
-            message.Subject = subject;
-            message.Body = new TextPart("plain") { Text = bodyText };
-
-            using (var memoryStream = new MemoryStream())
-            {
-                message.WriteTo(memoryStream);
-                var rawMessage = Convert.ToBase64String(memoryStream.ToArray())
-                    .Replace("+", "-")
-                    .Replace("/", "_")
-                    .Replace("=", "");
-
-                var gmailMessage = new Google.Apis.Gmail.v1.Data.Message { Raw = rawMessage };
-                service.Users.Messages.Send(gmailMessage, userID).Execute();
-
-                Console.WriteLine("Email sent!");
             }
         }
 
