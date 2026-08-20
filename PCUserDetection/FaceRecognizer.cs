@@ -3,8 +3,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
 using System.Linq;
-// PCUserDetection.Image is a Form in this project, so the ImageSharp type has to
-// be aliased to be usable here.
+// ImageSharp and System.Drawing both have an Image type, so the ImageSharp one
+// is aliased to keep the calls below unambiguous.
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace PCUserDetection

@@ -1,16 +1,9 @@
-﻿namespace PCUserDetection
+namespace PCUserDetection
 {
     partial class UserFaceDetector
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,143 +16,311 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Builds the shell: a navigation rail on the left and a content area on
+        /// the right that swaps between the camera and the image gallery.
+        /// Everything is docked, so the window can be resized freely.
         /// </summary>
         private void InitializeComponent()
         {
+            this.pnlNav = new System.Windows.Forms.Panel();
+            this.lblBrand = new System.Windows.Forms.Label();
+            this.flpNav = new System.Windows.Forms.FlowLayoutPanel();
+            this.lblCount = new System.Windows.Forms.Label();
+            this.pnlMain = new System.Windows.Forms.Panel();
+            this.pnlHeader = new System.Windows.Forms.Panel();
+            this.lblScreenTitle = new System.Windows.Forms.Label();
+            this.lblScreenHint = new System.Windows.Forms.Label();
+            this.pnlCameraSlot = new System.Windows.Forms.Panel();
+            this.pnlCameraFrame = new System.Windows.Forms.Panel();
+            this.pnlCameraClip = new System.Windows.Forms.Panel();
             this.cbCamera = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.pbCamera = new System.Windows.Forms.PictureBox();
-            this.btnDetect = new System.Windows.Forms.Button();
-            this.btnRestart = new System.Windows.Forms.Button();
-            this.btnAddUser = new System.Windows.Forms.Button();
-            this.lblAlert = new System.Windows.Forms.Label();
-            this.btnImages = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCamera)).BeginInit();
+            this.pnlFooter = new System.Windows.Forms.Panel();
+            this.pnlStatus = new System.Windows.Forms.Panel();
+            this.pnlStatusDot = new System.Windows.Forms.Panel();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.pnlActions = new System.Windows.Forms.FlowLayoutPanel();
+            this.btnPrimary = new System.Windows.Forms.Button();
+            this.btnSecondary = new System.Windows.Forms.Button();
+            this.cameraView = new PCUserDetection.CameraView();
+            this.pnlGallery = new System.Windows.Forms.Panel();
+            this.flpImages = new System.Windows.Forms.FlowLayoutPanel();
+            this.pnlNav.SuspendLayout();
+            this.pnlMain.SuspendLayout();
+            this.pnlHeader.SuspendLayout();
+            this.pnlCameraSlot.SuspendLayout();
+            this.pnlCameraFrame.SuspendLayout();
+            this.pnlFooter.SuspendLayout();
+            this.pnlStatus.SuspendLayout();
+            this.pnlActions.SuspendLayout();
+            this.pnlGallery.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
+            // pnlNav
+            //
+            this.pnlNav.BackColor = Theme.Surface;
+            this.pnlNav.Dock = System.Windows.Forms.DockStyle.Left;
+            this.pnlNav.Name = "pnlNav";
+            this.pnlNav.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
+            this.pnlNav.Size = new System.Drawing.Size(208, 640);
+            //
+            // lblBrand
+            //
+            this.lblBrand.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblBrand.Font = Theme.Brand;
+            this.lblBrand.ForeColor = Theme.Text;
+            this.lblBrand.Height = 80;
+            this.lblBrand.Name = "lblBrand";
+            this.lblBrand.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.lblBrand.Text = "User Detection";
+            this.lblBrand.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // flpNav
+            //
+            this.flpNav.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flpNav.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flpNav.Name = "flpNav";
+            this.flpNav.WrapContents = false;
+            //
+            // lblCount
+            //
+            this.lblCount.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lblCount.Font = Theme.Small;
+            this.lblCount.ForeColor = Theme.TextMuted;
+            this.lblCount.Height = 46;
+            this.lblCount.Name = "lblCount";
+            this.lblCount.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.lblCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // pnlMain
+            //
+            this.pnlMain.BackColor = Theme.Background;
+            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlMain.Name = "pnlMain";
+            this.pnlMain.Padding = new System.Windows.Forms.Padding(28, 20, 28, 20);
+            //
+            // pnlHeader
+            //
+            this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlHeader.Height = 72;
+            this.pnlHeader.Name = "pnlHeader";
+            //
+            // lblScreenTitle
+            //
+            this.lblScreenTitle.AutoSize = true;
+            this.lblScreenTitle.Font = Theme.Heading;
+            this.lblScreenTitle.ForeColor = Theme.Text;
+            this.lblScreenTitle.Location = new System.Drawing.Point(0, 2);
+            this.lblScreenTitle.Name = "lblScreenTitle";
+            //
+            // lblScreenHint
+            //
+            this.lblScreenHint.AutoSize = true;
+            this.lblScreenHint.Font = Theme.Body;
+            this.lblScreenHint.ForeColor = Theme.TextMuted;
+            this.lblScreenHint.Location = new System.Drawing.Point(0, 33);
+            this.lblScreenHint.Name = "lblScreenHint";
+            //
+            // pnlCameraSlot
+            //
+            this.pnlCameraSlot.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnlCameraSlot.Name = "pnlCameraSlot";
+            this.pnlCameraSlot.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
+            this.pnlCameraSlot.Width = 264;
+            //
+            // pnlCameraFrame
+            //
+            // A combo box always paints its own light border and drop arrow, and no
+            // property turns them off. It is put in a panel smaller than itself so
+            // both are clipped away, and the frame paints the border and the
+            // chevron in the colours of the theme instead.
+            this.pnlCameraFrame.BackColor = Theme.Surface;
+            this.pnlCameraFrame.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pnlCameraFrame.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlCameraFrame.Height = 34;
+            this.pnlCameraFrame.Name = "pnlCameraFrame";
+            this.pnlCameraFrame.Padding = new System.Windows.Forms.Padding(1, 1, 24, 1);
+            this.pnlCameraFrame.Size = new System.Drawing.Size(264, 34);
+            this.pnlCameraFrame.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlCameraFrame_Paint);
+            this.pnlCameraFrame.Click += new System.EventHandler(this.pnlCameraFrame_Click);
+            //
+            // pnlCameraClip
+            //
+            // sized rather than docked, because a panel clips its children to its
+            // own bounds and not to its padding
+            this.pnlCameraClip.BackColor = Theme.Surface;
+            this.pnlCameraClip.Location = new System.Drawing.Point(1, 4);
+            this.pnlCameraClip.Name = "pnlCameraClip";
+            this.pnlCameraClip.Size = new System.Drawing.Size(239, 26);
+            //
             // cbCamera
-            // 
+            //
+            this.cbCamera.BackColor = Theme.Surface;
+            this.cbCamera.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cbCamera.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbCamera.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.cbCamera.Font = new System.Drawing.Font("Poppins", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbCamera.FormattingEnabled = true;
-            this.cbCamera.Location = new System.Drawing.Point(175, 23);
+            this.cbCamera.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cbCamera.Font = Theme.Body;
+            this.cbCamera.ForeColor = Theme.Text;
+            this.cbCamera.ItemHeight = 32;
+            this.cbCamera.Location = new System.Drawing.Point(-1, -5);
             this.cbCamera.Name = "cbCamera";
-            this.cbCamera.Size = new System.Drawing.Size(236, 36);
+            this.cbCamera.Size = new System.Drawing.Size(264, 34);
             this.cbCamera.TabIndex = 0;
+            this.cbCamera.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.cbCamera_DrawItem);
             this.cbCamera.SelectedIndexChanged += new System.EventHandler(this.cbCamera_SelectedIndexChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Poppins", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(70, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(99, 34);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Camera:";
-            // 
-            // pbCamera
-            // 
-            this.pbCamera.Location = new System.Drawing.Point(76, 96);
-            this.pbCamera.Name = "pbCamera";
-            this.pbCamera.Size = new System.Drawing.Size(543, 350);
-            this.pbCamera.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbCamera.TabIndex = 2;
-            this.pbCamera.TabStop = false;
-            // 
-            // btnDetect
-            // 
-            this.btnDetect.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDetect.Location = new System.Drawing.Point(410, 487);
-            this.btnDetect.Name = "btnDetect";
-            this.btnDetect.Size = new System.Drawing.Size(113, 36);
-            this.btnDetect.TabIndex = 3;
-            this.btnDetect.Text = "Capture";
-            this.btnDetect.UseVisualStyleBackColor = true;
-            this.btnDetect.Click += new System.EventHandler(this.btnDetect_Click);
-            // 
-            // btnRestart
-            // 
-            this.btnRestart.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRestart.Location = new System.Drawing.Point(156, 487);
-            this.btnRestart.Name = "btnRestart";
-            this.btnRestart.Size = new System.Drawing.Size(113, 36);
-            this.btnRestart.TabIndex = 4;
-            this.btnRestart.Text = "Restart";
-            this.btnRestart.UseVisualStyleBackColor = true;
-            this.btnRestart.Click += new System.EventHandler(this.btnRestart_Click);
-            // 
-            // btnAddUser
-            // 
-            this.btnAddUser.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAddUser.Location = new System.Drawing.Point(694, 96);
-            this.btnAddUser.Name = "btnAddUser";
-            this.btnAddUser.Size = new System.Drawing.Size(113, 36);
-            this.btnAddUser.TabIndex = 6;
-            this.btnAddUser.Text = "Add user";
-            this.btnAddUser.UseVisualStyleBackColor = true;
-            this.btnAddUser.Click += new System.EventHandler(this.btnAddUser_Click);
-            // 
-            // lblAlert
-            // 
-            this.lblAlert.AutoSize = true;
-            this.lblAlert.Font = new System.Drawing.Font("Poppins", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAlert.Location = new System.Drawing.Point(312, 449);
-            this.lblAlert.Name = "lblAlert";
-            this.lblAlert.Size = new System.Drawing.Size(49, 22);
-            this.lblAlert.TabIndex = 5;
-            this.lblAlert.Text = "<Alert>";
-            this.lblAlert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lblAlert.Visible = false;
-            // 
-            // btnImages
-            // 
-            this.btnImages.Font = new System.Drawing.Font("Poppins", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnImages.Location = new System.Drawing.Point(694, 147);
-            this.btnImages.Name = "btnImages";
-            this.btnImages.Size = new System.Drawing.Size(113, 36);
-            this.btnImages.TabIndex = 7;
-            this.btnImages.Text = "Images";
-            this.btnImages.UseVisualStyleBackColor = true;
-            this.btnImages.Click += new System.EventHandler(this.btnImages_Click);
-            // 
+            //
+            // pnlFooter
+            //
+            this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlFooter.Height = 76;
+            this.pnlFooter.Name = "pnlFooter";
+            this.pnlFooter.Padding = new System.Windows.Forms.Padding(0, 20, 0, 0);
+            //
+            // pnlStatus
+            //
+            this.pnlStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlStatus.Name = "pnlStatus";
+            //
+            // pnlStatusDot
+            //
+            this.pnlStatusDot.Location = new System.Drawing.Point(2, 15);
+            this.pnlStatusDot.Name = "pnlStatusDot";
+            this.pnlStatusDot.Size = new System.Drawing.Size(10, 10);
+            this.pnlStatusDot.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlStatusDot_Paint);
+            //
+            // lblStatus
+            //
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = Theme.Status;
+            this.lblStatus.ForeColor = Theme.TextMuted;
+            this.lblStatus.Location = new System.Drawing.Point(22, 10);
+            this.lblStatus.Name = "lblStatus";
+            //
+            // pnlActions
+            //
+            this.pnlActions.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnlActions.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            this.pnlActions.Name = "pnlActions";
+            this.pnlActions.Size = new System.Drawing.Size(300, 56);
+            this.pnlActions.WrapContents = false;
+            //
+            // btnPrimary
+            //
+            this.btnPrimary.Name = "btnPrimary";
+            this.btnPrimary.Size = new System.Drawing.Size(132, 40);
+            this.btnPrimary.TabIndex = 1;
+            this.btnPrimary.Click += new System.EventHandler(this.btnPrimary_Click);
+            //
+            // btnSecondary
+            //
+            this.btnSecondary.Margin = new System.Windows.Forms.Padding(3, 3, 10, 3);
+            this.btnSecondary.Name = "btnSecondary";
+            this.btnSecondary.Size = new System.Drawing.Size(110, 40);
+            this.btnSecondary.TabIndex = 2;
+            this.btnSecondary.Text = "Retake";
+            this.btnSecondary.Click += new System.EventHandler(this.btnSecondary_Click);
+            //
+            // cameraView
+            //
+            this.cameraView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cameraView.Name = "cameraView";
+            //
+            // pnlGallery
+            //
+            this.pnlGallery.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlGallery.Name = "pnlGallery";
+            this.pnlGallery.Visible = false;
+            //
+            // flpImages
+            //
+            this.flpImages.AutoScroll = true;
+            this.flpImages.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flpImages.Name = "flpImages";
+            //
             // UserFaceDetector
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(842, 535);
-            this.Controls.Add(this.btnImages);
-            this.Controls.Add(this.btnAddUser);
-            this.Controls.Add(this.lblAlert);
-            this.Controls.Add(this.btnRestart);
-            this.Controls.Add(this.btnDetect);
-            this.Controls.Add(this.pbCamera);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.cbCamera);
+            this.BackColor = Theme.Background;
+            this.ClientSize = new System.Drawing.Size(1024, 640);
+            this.Font = Theme.Body;
+            this.ForeColor = Theme.Text;
+            this.MinimumSize = new System.Drawing.Size(900, 600);
             this.Name = "UserFaceDetector";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "PC User Face Detector";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserFaceDetector_FormClosing);
-            this.Load += new System.EventHandler(this.UserFaceDetector_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pbCamera)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            this.Text = "PC User Detection";
 
+            // A docked control claims its edge in the order it is added, so the
+            // Fill control goes in first and the edges are layered on top of it.
+            this.pnlNav.Controls.Add(this.flpNav);
+            this.pnlNav.Controls.Add(this.lblBrand);
+            this.pnlNav.Controls.Add(this.lblCount);
+
+            this.pnlCameraClip.Controls.Add(this.cbCamera);
+            this.pnlCameraFrame.Controls.Add(this.pnlCameraClip);
+            this.pnlCameraSlot.Controls.Add(this.pnlCameraFrame);
+
+            this.pnlHeader.Controls.Add(this.lblScreenTitle);
+            this.pnlHeader.Controls.Add(this.lblScreenHint);
+            this.pnlHeader.Controls.Add(this.pnlCameraSlot);
+
+            this.pnlStatus.Controls.Add(this.pnlStatusDot);
+            this.pnlStatus.Controls.Add(this.lblStatus);
+
+            this.pnlActions.Controls.Add(this.btnPrimary);
+            this.pnlActions.Controls.Add(this.btnSecondary);
+
+            this.pnlFooter.Controls.Add(this.pnlStatus);
+            this.pnlFooter.Controls.Add(this.pnlActions);
+
+            this.pnlGallery.Controls.Add(this.flpImages);
+
+            this.pnlMain.Controls.Add(this.cameraView);
+            this.pnlMain.Controls.Add(this.pnlGallery);
+            this.pnlMain.Controls.Add(this.pnlHeader);
+            this.pnlMain.Controls.Add(this.pnlFooter);
+
+            this.Controls.Add(this.pnlMain);
+            this.Controls.Add(this.pnlNav);
+
+            this.Load += new System.EventHandler(this.UserFaceDetector_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserFaceDetector_FormClosing);
+            this.pnlNav.ResumeLayout(false);
+            this.pnlCameraFrame.ResumeLayout(false);
+            this.pnlCameraSlot.ResumeLayout(false);
+            this.pnlHeader.ResumeLayout(false);
+            this.pnlHeader.PerformLayout();
+            this.pnlStatus.ResumeLayout(false);
+            this.pnlStatus.PerformLayout();
+            this.pnlActions.ResumeLayout(false);
+            this.pnlFooter.ResumeLayout(false);
+            this.pnlGallery.ResumeLayout(false);
+            this.pnlMain.ResumeLayout(false);
+            this.ResumeLayout(false);
         }
 
         #endregion
 
+        private System.Windows.Forms.Panel pnlNav;
+        private System.Windows.Forms.Label lblBrand;
+        private System.Windows.Forms.FlowLayoutPanel flpNav;
+        private System.Windows.Forms.Label lblCount;
+        private System.Windows.Forms.Panel pnlMain;
+        private System.Windows.Forms.Panel pnlHeader;
+        private System.Windows.Forms.Label lblScreenTitle;
+        private System.Windows.Forms.Label lblScreenHint;
+        private System.Windows.Forms.Panel pnlCameraSlot;
+        private System.Windows.Forms.Panel pnlCameraFrame;
+        private System.Windows.Forms.Panel pnlCameraClip;
         private System.Windows.Forms.ComboBox cbCamera;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.PictureBox pbCamera;
-        private System.Windows.Forms.Button btnDetect;
-        private System.Windows.Forms.Button btnRestart;
-        private System.Windows.Forms.Button btnAddUser;
-        private System.Windows.Forms.Label lblAlert;
-        private System.Windows.Forms.Button btnImages;
+        private System.Windows.Forms.Panel pnlFooter;
+        private System.Windows.Forms.Panel pnlStatus;
+        private System.Windows.Forms.Panel pnlStatusDot;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.FlowLayoutPanel pnlActions;
+        private System.Windows.Forms.Button btnPrimary;
+        private System.Windows.Forms.Button btnSecondary;
+        private CameraView cameraView;
+        private System.Windows.Forms.Panel pnlGallery;
+        private System.Windows.Forms.FlowLayoutPanel flpImages;
     }
 }
-

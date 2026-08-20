@@ -39,14 +39,18 @@ to download by hand.
 
 ## Using the app
 
+Everything lives in one window. The rail on the left switches between three
+screens, and the two camera screens share the same live feed.
+
 | Screen | What it does |
 | --- | --- |
-| **Main** (`UserFaceDetector`) | Shows the live camera feed. **Capture** takes the current frame and reports whether the person is verified or anonymous. **Restart** clears the result and resumes the feed. |
-| **Add user** (`AddUser`) | Captures a frame and saves it to `CapturedImages/` as a registered user image. |
-| **Images** (`Images`) | Lists every registered image, with a delete button for each. |
+| **Detect** | **Capture** takes the frame on screen and reports whether the person is verified or anonymous. **Retake** releases the frame and resumes the feed. |
+| **Add user** | **Save photo** writes the frame on screen to `CapturedImages/` as a registered user image. |
+| **Images** | Every registered image, with a **Remove** button on each. |
 
-Use the **Camera** dropdown to pick a different capture device if more than one
-is connected.
+Use the camera dropdown in the top right to pick a different capture device if
+more than one is connected. It is hidden on the Images screen, where the camera
+is stopped.
 
 ## How it works
 
@@ -71,10 +75,10 @@ loading them takes roughly a second.
 
 ```
 PCUserDetection/
-├── UserFaceDetector.cs      main form: camera feed and verification
-├── AddUser.cs               registers a new user image
-├── Images.cs                lists registered images
-├── Image.cs                 user control for one image row
+├── UserFaceDetector.cs      the window: navigation and the three screens
+├── Theme.cs                 colours, fonts and button styles
+├── CameraView.cs            the webcam feed and the frame it hands out
+├── ImageCard.cs             one registered image in the gallery
 ├── FaceRecognizer.cs        face detection and embedding comparison
 ├── AppPaths.cs              resolves the image folder locations
 ├── AnonymousImages/         the most recent captured frame
@@ -87,6 +91,10 @@ they are missing.
 
 ## Notes
 
+- The look is defined in one file, [`Theme.cs`](PCUserDetection/Theme.cs).
+  Editing the colours there changes the whole app; nothing else hardcodes one.
+- The screens are docked rather than positioned by pixel, so the window can be
+  resized and the camera feed grows with it.
 - Recognition used to live in a separate `FaceDetection` console app that the
   form launched as a child process and parsed stdout from. It now runs
   in-process, which removed the hardcoded path to the console executable and
