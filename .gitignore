@@ -1,0 +1,48 @@
+# Secrets / local environment
+.env
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code working folders
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# NuGet
+# packages/ is the legacy packages.config restore folder; PackageReference
+# restores to the global cache instead, so nothing here belongs in the repo.
+packages/
+*.nupkg
+*.snupkg
+!**/[Pp]ackages/build/
+
+# Build results / caches
+*.cache
+*.tmp
+project.lock.json
+project.assets.json
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Test / coverage
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+
+# OS cruft
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
