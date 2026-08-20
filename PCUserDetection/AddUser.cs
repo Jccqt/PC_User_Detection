@@ -82,7 +82,7 @@ namespace PCUserDetection
             {
                 videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
                 string filename = $"Image_{DateTime.Now:yyyyMMdd_HHmmss}.jpeg";
-                string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\CapturedImages";
+                string directory = AppPaths.CapturedImages;
                 string filepath = System.IO.Path.Combine(directory, filename);
                 currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
                 lblImageFileDir.Text = "Image has been captured and saved on " + directory + "\\" + filename;

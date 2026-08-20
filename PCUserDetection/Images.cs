@@ -39,8 +39,7 @@ namespace PCUserDetection
         {
             flpImages.Controls.Clear();
 
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string fullPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\PCUserDetection\CapturedImages\"));
+            string fullPath = AppPaths.CapturedImages;
 
             string[] imageFiles = Directory.GetFiles(fullPath, "*.*").
                 Where(file => file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)).ToArray();

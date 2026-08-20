@@ -25,9 +25,8 @@ namespace PCUserDetection
 
             if(deleteImgDiag == DialogResult.Yes)
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string fullPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\PCUserDetection\CapturedImages\"));
-                File.Delete(Path.Combine(fullPath, btnDelete.Tag.ToString()));
+                // Tag holds the full path of the image this row was built from
+                File.Delete(btnDelete.Tag.ToString());
 
                 MessageBox.Show($"Image {btnDelete.Tag.ToString()} has been successfully deleted.", "Image Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
 

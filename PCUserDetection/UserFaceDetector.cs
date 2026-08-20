@@ -87,15 +87,11 @@ namespace PCUserDetection
                 // whole body has to be guarded here.
                 try
                 {
-                    string filename = "Anonymous.jpeg";
-                    string directory = System.IO.Path.Combine(GetProjectDirectory(), "AnonymousImages");
-                    string filepath = System.IO.Path.Combine(directory, filename);
+                    string filepath = AppPaths.AnonymousImage;
                     currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
                     lblAlert.Visible = true;
 
-                    string capturedImagesDirectory = System.IO.Path.Combine(GetProjectDirectory(), "CapturedImages");
-
-                    if (faceRecognizer.IsUserVerified(filepath, capturedImagesDirectory))
+                    if (faceRecognizer.IsUserVerified(filepath, AppPaths.CapturedImages))
                     {
                         lblAlert.Text = "The user was verified";
                         lblAlert.ForeColor = System.Drawing.Color.Green;
@@ -119,12 +115,6 @@ namespace PCUserDetection
                         "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-        }
-
-        // the image folders live next to the project file, one level above bin\<Config>\
-        private static string GetProjectDirectory()
-        {
-            return Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName;
         }
 
         private void btnRestart_Click(object sender, EventArgs e)
