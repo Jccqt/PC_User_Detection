@@ -25,6 +25,9 @@ namespace PCUserDetection
             this.pnlNav = new System.Windows.Forms.Panel();
             this.lblBrand = new System.Windows.Forms.Label();
             this.flpNav = new System.Windows.Forms.FlowLayoutPanel();
+            this.pnlAppearance = new System.Windows.Forms.Panel();
+            this.lblAppearance = new System.Windows.Forms.Label();
+            this.flpModes = new System.Windows.Forms.FlowLayoutPanel();
             this.lblCount = new System.Windows.Forms.Label();
             this.pnlMain = new System.Windows.Forms.Panel();
             this.pnlHeader = new System.Windows.Forms.Panel();
@@ -45,6 +48,7 @@ namespace PCUserDetection
             this.pnlGallery = new System.Windows.Forms.Panel();
             this.flpImages = new System.Windows.Forms.FlowLayoutPanel();
             this.pnlNav.SuspendLayout();
+            this.pnlAppearance.SuspendLayout();
             this.pnlMain.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             this.pnlCameraSlot.SuspendLayout();
@@ -57,7 +61,6 @@ namespace PCUserDetection
             //
             // pnlNav
             //
-            this.pnlNav.BackColor = Theme.Surface;
             this.pnlNav.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlNav.Name = "pnlNav";
             this.pnlNav.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
@@ -68,7 +71,6 @@ namespace PCUserDetection
             //
             this.lblBrand.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblBrand.Font = Theme.Brand;
-            this.lblBrand.ForeColor = Theme.Text;
             this.lblBrand.Height = 80;
             this.lblBrand.Name = "lblBrand";
             this.lblBrand.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
@@ -82,11 +84,35 @@ namespace PCUserDetection
             this.flpNav.Name = "flpNav";
             this.flpNav.WrapContents = false;
             //
+            // pnlAppearance
+            //
+            this.pnlAppearance.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlAppearance.Height = 62;
+            this.pnlAppearance.Name = "pnlAppearance";
+            //
+            // lblAppearance
+            //
+            this.lblAppearance.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblAppearance.Font = Theme.Small;
+            this.lblAppearance.Height = 24;
+            this.lblAppearance.Name = "lblAppearance";
+            this.lblAppearance.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.lblAppearance.Text = "Appearance";
+            this.lblAppearance.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // flpModes
+            //
+            // the three buttons themselves are built in BuildThemeButtons, next to
+            // the navigation buttons they are styled like
+            this.flpModes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flpModes.Name = "flpModes";
+            this.flpModes.Padding = new System.Windows.Forms.Padding(4, 0, 0, 0);
+            this.flpModes.WrapContents = false;
+            //
             // lblCount
             //
             this.lblCount.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.lblCount.Font = Theme.Small;
-            this.lblCount.ForeColor = Theme.TextMuted;
             this.lblCount.Height = 46;
             this.lblCount.Name = "lblCount";
             this.lblCount.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
@@ -94,7 +120,6 @@ namespace PCUserDetection
             //
             // pnlMain
             //
-            this.pnlMain.BackColor = Theme.Background;
             this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlMain.Name = "pnlMain";
             this.pnlMain.Padding = new System.Windows.Forms.Padding(28, 20, 28, 20);
@@ -109,7 +134,6 @@ namespace PCUserDetection
             //
             this.lblScreenTitle.AutoSize = true;
             this.lblScreenTitle.Font = Theme.Heading;
-            this.lblScreenTitle.ForeColor = Theme.Text;
             this.lblScreenTitle.Location = new System.Drawing.Point(0, 2);
             this.lblScreenTitle.Name = "lblScreenTitle";
             //
@@ -117,7 +141,6 @@ namespace PCUserDetection
             //
             this.lblScreenHint.AutoSize = true;
             this.lblScreenHint.Font = Theme.Body;
-            this.lblScreenHint.ForeColor = Theme.TextMuted;
             this.lblScreenHint.Location = new System.Drawing.Point(0, 33);
             this.lblScreenHint.Name = "lblScreenHint";
             //
@@ -134,7 +157,6 @@ namespace PCUserDetection
             // property turns them off. It is put in a panel smaller than itself so
             // both are clipped away, and the frame paints the border and the
             // chevron in the colours of the theme instead.
-            this.pnlCameraFrame.BackColor = Theme.Surface;
             this.pnlCameraFrame.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pnlCameraFrame.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlCameraFrame.Height = 34;
@@ -148,19 +170,16 @@ namespace PCUserDetection
             //
             // sized rather than docked, because a panel clips its children to its
             // own bounds and not to its padding
-            this.pnlCameraClip.BackColor = Theme.Surface;
             this.pnlCameraClip.Location = new System.Drawing.Point(1, 4);
             this.pnlCameraClip.Name = "pnlCameraClip";
             this.pnlCameraClip.Size = new System.Drawing.Size(239, 26);
             //
             // cbCamera
             //
-            this.cbCamera.BackColor = Theme.Surface;
             this.cbCamera.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cbCamera.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbCamera.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cbCamera.Font = Theme.Body;
-            this.cbCamera.ForeColor = Theme.Text;
             this.cbCamera.ItemHeight = 32;
             this.cbCamera.Location = new System.Drawing.Point(-1, -5);
             this.cbCamera.Name = "cbCamera";
@@ -192,7 +211,6 @@ namespace PCUserDetection
             //
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = Theme.Status;
-            this.lblStatus.ForeColor = Theme.TextMuted;
             this.lblStatus.Location = new System.Drawing.Point(22, 10);
             this.lblStatus.Name = "lblStatus";
             //
@@ -241,10 +259,8 @@ namespace PCUserDetection
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = Theme.Background;
             this.ClientSize = new System.Drawing.Size(1024, 640);
             this.Font = Theme.Body;
-            this.ForeColor = Theme.Text;
             this.MinimumSize = new System.Drawing.Size(900, 600);
             this.Name = "UserFaceDetector";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -254,6 +270,10 @@ namespace PCUserDetection
             // Fill control goes in first and the edges are layered on top of it.
             this.pnlNav.Controls.Add(this.flpNav);
             this.pnlNav.Controls.Add(this.lblBrand);
+            this.pnlAppearance.Controls.Add(this.flpModes);
+            this.pnlAppearance.Controls.Add(this.lblAppearance);
+
+            this.pnlNav.Controls.Add(this.pnlAppearance);
             this.pnlNav.Controls.Add(this.lblCount);
 
             this.pnlCameraClip.Controls.Add(this.cbCamera);
@@ -285,6 +305,7 @@ namespace PCUserDetection
 
             this.Load += new System.EventHandler(this.UserFaceDetector_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserFaceDetector_FormClosing);
+            this.pnlAppearance.ResumeLayout(false);
             this.pnlNav.ResumeLayout(false);
             this.pnlCameraFrame.ResumeLayout(false);
             this.pnlCameraSlot.ResumeLayout(false);
@@ -304,6 +325,9 @@ namespace PCUserDetection
         private System.Windows.Forms.Panel pnlNav;
         private System.Windows.Forms.Label lblBrand;
         private System.Windows.Forms.FlowLayoutPanel flpNav;
+        private System.Windows.Forms.Panel pnlAppearance;
+        private System.Windows.Forms.Label lblAppearance;
+        private System.Windows.Forms.FlowLayoutPanel flpModes;
         private System.Windows.Forms.Label lblCount;
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Panel pnlHeader;

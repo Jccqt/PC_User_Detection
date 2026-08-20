@@ -31,6 +31,22 @@ namespace PCUserDetection
             get { return EnsureDirectory(Path.Combine(ProjectDirectory, "CapturedImages")); }
         }
 
+        /// <summary>
+        /// Where the chosen theme is remembered. This one lives under AppData
+        /// rather than next to the executable, so the setting belongs to the
+        /// person rather than to the build, and a rebuild does not lose it.
+        /// </summary>
+        public static string ThemeSetting
+        {
+            get
+            {
+                string folder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "PCUserDetection");
+                return Path.Combine(EnsureDirectory(folder), "theme.txt");
+            }
+        }
+
         /// <summary>The frame captured by the Capture button.</summary>
         public static string AnonymousImage
         {

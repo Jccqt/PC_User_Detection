@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -8,10 +9,10 @@ namespace PCUserDetection
 {
     internal enum ThemeMode
     {
-        /// <summary>Follow the app theme Windows is set to.</summary>
-        System,
         Light,
-        Dark
+        Dark,
+        /// <summary>Follow the app theme Windows is set to.</summary>
+        System
     }
 
     /// <summary>
@@ -20,40 +21,59 @@ namespace PCUserDetection
     /// file rather than by hunting through the designer code.
     /// </summary>
     /// <remarks>
-    /// The palette is chosen once, when the app starts, from the Windows app
-    /// theme. Changing the Windows setting while the app is open does not
-    /// repaint it; restarting the app picks the new palette up.
+    /// The palette can change while the app is running, so nothing should hold on
+    /// to a colour it read earlier. Read <see cref="Text"/> and the rest at the
+    /// moment they are needed, which for painted controls means inside their
+    /// Paint handler.
     /// </remarks>
     internal static class Theme
     {
-        /// <summary>Set this to Light or Dark to ignore what Windows is set to.</summary>
-        private const ThemeMode Preferred = ThemeMode.Light;
+        /// <summary>Used until the person picks a theme for the first time.</summary>
+        private const ThemeMode DefaultMode = ThemeMode.Light;
+
+        /// <summary>The setting in force, which is what the rail shows as selected.</summary>
+        public static ThemeMode Mode { get; private set; }
 
         /// <summary>True when the dark palette is the one in use.</summary>
-        public static readonly bool IsDark;
+        public static bool IsDark { get; private set; }
 
         // surfaces, from the back of the window to the front
-        public static readonly Color Background;
-        public static readonly Color Surface;
-        public static readonly Color SurfaceHover;
-        public static readonly Color Canvas; // behind the camera image
-        public static readonly Color Border;
+        public static Color Background { get; private set; }
+        public static Color Surface { get; private set; }
+        public static Color SurfaceHover { get; private set; }
+        public static Color Canvas { get; private set; } // behind the camera image
+        public static Color Border { get; private set; }
 
         // text
-        public static readonly Color Text;
-        public static readonly Color TextMuted;
+        public static Color Text { get; private set; }
+        public static Color TextMuted { get; private set; }
 
         // meaning
-        public static readonly Color Accent;
-        public static readonly Color AccentHover;
-        public static readonly Color OnAccent; // text on top of the accent
-        public static readonly Color Success;
-        public static readonly Color Danger;
+        public static Color Accent { get; private set; }
+        public static Color AccentHover { get; private set; }
+        public static Color OnAccent { get; private set; } // text on top of the accent
+        public static Color Success { get; private set; }
+        public static Color Danger { get; private set; }
 
         static Theme()
         {
-            IsDark = Preferred == ThemeMode.Dark ||
-                     (Preferred == ThemeMode.System && WindowsPrefersDarkApps());
+            Select(LoadMode());
+        }
+
+        /// <summary>
+        /// Switches the palette and remembers the choice for the next run. The
+        /// window still has to re-apply the colours to its controls afterwards.
+        /// </summary>
+        public static void Apply(ThemeMode mode)
+        {
+            Select(mode);
+            SaveMode(mode);
+        }
+
+        private static void Select(ThemeMode mode)
+        {
+            Mode = mode;
+            IsDark = mode == ThemeMode.Dark || (mode == ThemeMode.System && WindowsPrefersDarkApps());
 
             if (IsDark)
             {
@@ -164,6 +184,38 @@ namespace PCUserDetection
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        private static ThemeMode LoadMode()
+        {
+            try
+            {
+                string path = AppPaths.ThemeSetting;
+
+                if (File.Exists(path))
+                {
+                    ThemeMode saved;
+                    if (Enum.TryParse(File.ReadAllText(path).Trim(), true, out saved)) return saved;
+                }
+            }
+            catch (Exception)
+            {
+                // an unreadable setting is not worth failing the app over
+            }
+
+            return DefaultMode;
+        }
+
+        private static void SaveMode(ThemeMode mode)
+        {
+            try
+            {
+                File.WriteAllText(AppPaths.ThemeSetting, mode.ToString());
+            }
+            catch (Exception)
+            {
+                // the theme still changed for this run, it just will not be remembered
             }
         }
 
