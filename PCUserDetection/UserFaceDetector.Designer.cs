@@ -62,6 +62,7 @@ namespace PCUserDetection
             this.pnlNav.Name = "pnlNav";
             this.pnlNav.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
             this.pnlNav.Size = new System.Drawing.Size(208, 640);
+            this.pnlNav.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlNav_Paint);
             //
             // lblBrand
             //

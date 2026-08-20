@@ -33,7 +33,7 @@ namespace PCUserDetection
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Theme.ApplyDarkTitleBar(Handle);
+            Theme.ApplyTitleBar(Handle);
         }
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
@@ -93,6 +93,15 @@ namespace PCUserDetection
             button.Paint += NavButton_Paint;
             button.Click += (s, e) => ShowScreen(screen);
             return button;
+        }
+
+        /// <summary>Separates the rail from the content with a hairline down its right edge.</summary>
+        private void pnlNav_Paint(object sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Theme.Border))
+            {
+                e.Graphics.DrawLine(pen, pnlNav.Width - 1, 0, pnlNav.Width - 1, pnlNav.Height);
+            }
         }
 
         /// <summary>Marks the screen the rail is on with an accent bar down its left edge.</summary>
@@ -200,7 +209,7 @@ namespace PCUserDetection
             if (cbCamera.Enabled) cbCamera.DroppedDown = true;
         }
 
-        /// <summary>The combo box is owner drawn so its list matches the dark theme.</summary>
+        /// <summary>The combo box is owner drawn so its list matches the theme.</summary>
         private void cbCamera_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index < 0) return;

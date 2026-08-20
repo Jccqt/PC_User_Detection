@@ -93,6 +93,11 @@ they are missing.
 
 - The look is defined in one file, [`Theme.cs`](PCUserDetection/Theme.cs).
   Editing the colours there changes the whole app; nothing else hardcodes one.
+- There is a light and a dark palette. The `Preferred` constant at the top of
+  `Theme.cs` picks between them: `ThemeMode.Light`, `ThemeMode.Dark`, or
+  `ThemeMode.System` to follow the app theme Windows is set to. The palette is
+  chosen when the app starts, so changing the Windows setting takes effect on
+  the next run rather than immediately.
 - The screens are docked rather than positioned by pixel, so the window can be
   resized and the camera feed grows with it.
 - Recognition used to live in a separate `FaceDetection` console app that the
