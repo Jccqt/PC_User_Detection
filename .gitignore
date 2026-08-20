@@ -51,3 +51,10 @@ $RECYCLE.BIN/
 # meant to be in the repository; this only catches a copy left in the tree.
 email.json
 SentMail/
+
+# Registered user photos and the most recent captured frame. These are images
+# of a real person's face and belong to whoever runs the app, not to the
+# repository. AppPaths creates both folders on demand, so a clone works without
+# them.
+PCUserDetection/AnonymousImages/
+PCUserDetection/CapturedImages/
