@@ -47,6 +47,7 @@ namespace PCUserDetection
             this.cameraView = new PCUserDetection.CameraView();
             this.pnlGallery = new System.Windows.Forms.Panel();
             this.flpImages = new System.Windows.Forms.FlowLayoutPanel();
+            this.pnlSettings = new PCUserDetection.SettingsPanel();
             this.pnlNav.SuspendLayout();
             this.pnlAppearance.SuspendLayout();
             this.pnlMain.SuspendLayout();
@@ -255,6 +256,14 @@ namespace PCUserDetection
             this.flpImages.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flpImages.Name = "flpImages";
             //
+            // pnlSettings
+            //
+            // the fields inside it are built by the control itself, the same way
+            // the gallery cards are
+            this.pnlSettings.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlSettings.Name = "pnlSettings";
+            this.pnlSettings.Visible = false;
+            //
             // UserFaceDetector
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -297,6 +306,7 @@ namespace PCUserDetection
 
             this.pnlMain.Controls.Add(this.cameraView);
             this.pnlMain.Controls.Add(this.pnlGallery);
+            this.pnlMain.Controls.Add(this.pnlSettings);
             this.pnlMain.Controls.Add(this.pnlHeader);
             this.pnlMain.Controls.Add(this.pnlFooter);
 
@@ -347,5 +357,6 @@ namespace PCUserDetection
         private CameraView cameraView;
         private System.Windows.Forms.Panel pnlGallery;
         private System.Windows.Forms.FlowLayoutPanel flpImages;
+        private SettingsPanel pnlSettings;
     }
 }

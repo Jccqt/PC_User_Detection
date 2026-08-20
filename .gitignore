@@ -46,3 +46,8 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+
+# Email alert settings. These live in %APPDATA%\PCUserDetection and are never
+# meant to be in the repository; this only catches a copy left in the tree.
+email.json
+SentMail/

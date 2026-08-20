@@ -1,0 +1,13 @@
+{
+  "Enabled": true,
+  "Delivery": "Smtp",
+  "Host": "smtp.gmail.com",
+  "Port": 587,
+  "Security": "StartTls",
+  "Username": "you@gmail.com",
+  "PasswordProtected": "",
+  "From": "you@gmail.com",
+  "To": "you@gmail.com",
+  "AttachPhoto": true,
+  "CooldownMinutes": 5
+}

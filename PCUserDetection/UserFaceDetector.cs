@@ -11,12 +11,12 @@ namespace PCUserDetection
 {
     /// <summary>
     /// The only window in the app. The navigation rail swaps the content area
-    /// between three screens; Detect and Add user share one camera view, so the
+    /// between four screens; Detect and Add user share one camera view, so the
     /// webcam is never opened twice.
     /// </summary>
     public partial class UserFaceDetector : Form
     {
-        private enum Screen { Detect, AddUser, Images }
+        private enum Screen { Detect, AddUser, Images, Settings }
 
         /// <summary>What a status line means, so its colour survives a theme change.</summary>
         private enum StatusKind { Neutral, Good, Bad }
@@ -66,6 +66,7 @@ namespace PCUserDetection
             cbCamera.ForeColor = Theme.Text;
 
             cameraView.BackColor = Theme.Canvas;
+            pnlSettings.ApplyTheme();
 
             Theme.StylePrimary(btnPrimary);
             Theme.StyleGhost(btnSecondary);
@@ -114,14 +115,7 @@ namespace PCUserDetection
         /// <summary>Marks the mode in force. Auto tracks whatever Windows is set to.</summary>
         private void StyleModeButton(Button button)
         {
-            bool selected = (ThemeMode)button.Tag == Theme.Mode;
-
-            button.BackColor = selected ? Theme.Accent : Theme.Surface;
-            button.ForeColor = selected ? Theme.OnAccent : Theme.TextMuted;
-            button.FlatAppearance.BorderSize = selected ? 0 : 1;
-            button.FlatAppearance.BorderColor = Theme.Border;
-            button.FlatAppearance.MouseOverBackColor = selected ? Theme.AccentHover : Theme.SurfaceHover;
-            button.FlatAppearance.MouseDownBackColor = button.BackColor;
+            Theme.StyleChoice(button, (ThemeMode)button.Tag == Theme.Mode);
         }
 
         private void StyleNavButton(Button button)
@@ -177,6 +171,7 @@ namespace PCUserDetection
             flpNav.Controls.Add(CreateNavButton("Detect", Screen.Detect));
             flpNav.Controls.Add(CreateNavButton("Add user", Screen.AddUser));
             flpNav.Controls.Add(CreateNavButton("Images", Screen.Images));
+            flpNav.Controls.Add(CreateNavButton("Settings", Screen.Settings));
         }
 
         private Button CreateNavButton(string text, Screen screen)
@@ -229,9 +224,10 @@ namespace PCUserDetection
 
             foreach (Control control in flpNav.Controls) StyleNavButton((Button)control);
 
-            bool usesCamera = screen != Screen.Images;
+            bool usesCamera = screen == Screen.Detect || screen == Screen.AddUser;
             cameraView.Visible = usesCamera;
-            pnlGallery.Visible = !usesCamera;
+            pnlGallery.Visible = screen == Screen.Images;
+            pnlSettings.Visible = screen == Screen.Settings;
             pnlFooter.Visible = usesCamera;
             pnlCameraSlot.Visible = usesCamera && cameras != null && cameras.Count > 0;
 
@@ -251,6 +247,10 @@ namespace PCUserDetection
                     lblScreenTitle.Text = "Images";
                     lblScreenHint.Text = "Every photo the detection is compared against.";
                     break;
+                case Screen.Settings:
+                    lblScreenTitle.Text = "Settings";
+                    lblScreenHint.Text = "Email an alert when the person at the PC is not recognised.";
+                    break;
             }
 
             if (usesCamera)
@@ -258,12 +258,15 @@ namespace PCUserDetection
                 StartSelectedCamera();
                 btnSecondary.Enabled = cameraView.IsFrozen;
                 ResetStatus();
+                return;
             }
-            else
-            {
-                cameraView.Stop();
-                RefreshGallery();
-            }
+
+            cameraView.Stop();
+
+            // both screens read from disk as they are shown, so a photo saved or
+            // a setting changed on another screen is never stale here
+            if (screen == Screen.Images) RefreshGallery();
+            else pnlSettings.Reload();
         }
 
         #endregion
@@ -377,7 +380,7 @@ namespace PCUserDetection
                     FaceRecognizer.GetFaceRecognizerInstance().IsUserVerified(filepath, AppPaths.CapturedImages));
 
                 if (verified) SetStatus("Verified. This is a registered user.", StatusKind.Good);
-                else SetStatus("Anonymous. No registered image matched.", StatusKind.Bad);
+                else await ReportAnonymousAsync(filepath);
             }
             catch (Exception ex)
             {
@@ -391,6 +394,37 @@ namespace PCUserDetection
             finally
             {
                 btnPrimary.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Says the face was not recognised, and emails the frame if the settings
+        /// ask for it. The alert never throws, so whatever became of it is only
+        /// ever a line on the status bar.
+        /// </summary>
+        private async Task ReportAnonymousAsync(string photoPath)
+        {
+            const string anonymous = "Anonymous. ";
+
+            SetStatus(anonymous + "No registered image matched.", StatusKind.Bad);
+
+            // Retake is held for the send as well as Capture, so it cannot put
+            // "Ready" on the status line a moment before the alert overwrites it
+            btnSecondary.Enabled = false;
+
+            try
+            {
+                EmailAlertResult alert = await EmailAlert.SendAnonymousAsync(photoPath,
+                    () => SetStatus(anonymous + "Sending an alert...", StatusKind.Bad));
+
+                // with alerts off there is nothing to add, and the line above stands
+                if (alert.Outcome == EmailAlertOutcome.Disabled) return;
+
+                SetStatus(anonymous + alert.Detail, StatusKind.Bad);
+            }
+            finally
+            {
+                btnSecondary.Enabled = cameraView.IsFrozen;
             }
         }
 

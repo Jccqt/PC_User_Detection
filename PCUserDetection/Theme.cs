@@ -146,6 +146,21 @@ namespace PCUserDetection
         }
 
         /// <summary>
+        /// A small button in a strip of choices, one of which is in force. Used
+        /// by the Appearance switch in the rail and by every choice on the
+        /// settings screen, so they all mark the chosen one the same way.
+        /// </summary>
+        public static void StyleChoice(Button button, bool selected)
+        {
+            button.BackColor = selected ? Accent : Surface;
+            button.ForeColor = selected ? OnAccent : TextMuted;
+            button.FlatAppearance.BorderSize = selected ? 0 : 1;
+            button.FlatAppearance.BorderColor = Border;
+            button.FlatAppearance.MouseOverBackColor = selected ? AccentHover : SurfaceHover;
+            button.FlatAppearance.MouseDownBackColor = button.BackColor;
+        }
+
+        /// <summary>
         /// Puts the title bar in the same light or dark mode as the palette. This
         /// is supported from Windows 10 20H1 onwards and is ignored, without
         /// failing, on anything older.

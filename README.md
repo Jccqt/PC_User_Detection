@@ -5,6 +5,9 @@ registered user. It captures a frame from the webcam, generates a face
 embedding for it, and compares that against the embeddings of every
 registered user image. If any pair is similar enough, the user is verified.
 
+It can also email you the photo when the person is not recognised. That is off
+until you configure it; see [Email alerts](#email-alerts).
+
 ## Requirements
 
 - Windows (the app uses WinForms and DirectShow, so it is Windows-only)
@@ -39,7 +42,7 @@ to download by hand.
 
 ## Using the app
 
-Everything lives in one window. The rail on the left switches between three
+Everything lives in one window. The rail on the left switches between four
 screens, and the two camera screens share the same live feed.
 
 | Screen | What it does |
@@ -47,6 +50,7 @@ screens, and the two camera screens share the same live feed.
 | **Detect** | **Capture** takes the frame on screen and reports whether the person is verified or anonymous. **Retake** releases the frame and resumes the feed. |
 | **Add user** | **Save photo** writes the frame on screen to `CapturedImages/` as a registered user image. |
 | **Images** | Every registered image, with a **Remove** button on each. |
+| **Settings** | Turns the email alert on and points it at a mail server. |
 
 Use the camera dropdown in the top right to pick a different capture device if
 more than one is connected. It is hidden on the Images screen, where the camera
@@ -71,23 +75,86 @@ An image with no detectable face is skipped rather than failing the whole
 comparison. The models are loaded once and reused for every detection, since
 loading them takes roughly a second.
 
+## Email alerts
+
+When a capture on **Detect** comes back anonymous, the app can email you the
+frame that failed the check. It is off until you turn it on, and the app ships
+with no server, address or key of any kind in it.
+
+Mail goes out over plain SMTP through
+[MailKit](https://github.com/jstedfast/MailKit), so any mailbox you already own
+will do — Gmail, a company relay, a local test server. There is no account to
+sign up for and no provider baked into the code.
+
+### Setting it up
+
+Fill in the **Settings** screen and press **Save**. **Send test email** proves
+the settings work before you rely on them; whatever the server says comes back
+on the line underneath.
+
+| Setting | What it is for |
+| --- | --- |
+| **Email an alert** | Off means nothing is ever sent, whatever else is filled in. |
+| **Attach the photo** | Attaches the captured frame to the message. |
+| **Cooldown** | Minutes before another alert may go out. Without it, somebody sitting in front of the camera is a mailbox full of alerts. |
+| **From** / **To** | The mailboxes it is sent from and to. **To** takes several addresses separated by commas. |
+| **Send using** | **SMTP server**, or **Folder** to write the message to disk instead. |
+| **Server** / **Port** / **Security** | Where to connect, and how. STARTTLS on port 587 is the usual pair; SSL is the older scheme on port 465. |
+| **Username** / **Password** | Left empty for a relay that does not ask who is connecting. |
+
+For Gmail, the server is `smtp.gmail.com` on port 587 with STARTTLS, and the
+password is a 16-character [App Password](https://support.google.com/accounts/answer/185833)
+rather than the password you sign in with. Google needs two-step verification
+on the account before it will issue one. Outlook.com and Microsoft 365 no
+longer accept a password over SMTP at all, so send from somewhere else.
+
+**Folder** writes the message to `%APPDATA%\PCUserDetection\SentMail\` as an
+`.eml` file instead of sending it. Every part of the alert runs — the check,
+the cooldown, the attachment, the composed message — with nothing but a folder
+to look in afterwards, which is what a fresh clone with no mail account needs.
+
+### Where the settings are kept
+
+In `%APPDATA%\PCUserDetection\email.json`, next to the theme setting, and never
+in the repository. [`email.example.json`](email.example.json) shows the shape
+of the file; there is no need to write it by hand.
+
+The password is not stored in the clear. It is encrypted with DPAPI under the
+Windows account that entered it, which means the file cannot be read on another
+machine or by another user, and the app has no key of its own to keep anywhere.
+Copy the file to a second PC and the password comes back empty, so type it in
+again there.
+
 ## Project layout
 
 ```
 PCUserDetection/
-├── UserFaceDetector.cs      the window: navigation and the three screens
+├── UserFaceDetector.cs      the window: navigation and the four screens
 ├── Theme.cs                 colours, fonts and button styles
 ├── CameraView.cs            the webcam feed and the frame it hands out
 ├── ImageCard.cs             one registered image in the gallery
+├── ChoiceStrip.cs           a row of buttons where one is the choice in force
+├── SettingsPanel.cs         the Settings screen
 ├── FaceRecognizer.cs        face detection and embedding comparison
-├── AppPaths.cs              resolves the image folder locations
+├── EmailAlert.cs            whether a failed check becomes an email, and what it says
+├── EmailSender.cs           the transports: SMTP, and the folder used in its place
+├── EmailSettings.cs         the alert settings, and the encrypted password
+├── AppPaths.cs              resolves the image folders and the settings files
 ├── AnonymousImages/         the most recent captured frame
 └── CapturedImages/          registered user images
 ```
 
 Image paths are resolved in one place, [`AppPaths`](PCUserDetection/AppPaths.cs),
 from the folder the executable lives in. Both folders are created on demand if
-they are missing.
+they are missing. The settings files live under `%APPDATA%` instead, and are
+resolved from the same place.
+
+The alert is split so that the decision and the delivery stay apart:
+[`EmailAlert`](PCUserDetection/EmailAlert.cs) decides whether to send and writes
+the message, and an `IEmailSender` in
+[`EmailSender.cs`](PCUserDetection/EmailSender.cs) delivers it. Sending through
+a provider's HTTP API instead would be another implementation of that
+interface, with nothing above it changing.
 
 ## Notes
 
@@ -107,9 +174,18 @@ they are missing.
   re-paint it; the next run picks the new setting up.
 - The screens are docked rather than positioned by pixel, so the window can be
   resized and the camera feed grows with it.
+- The Settings screen uses [`ChoiceStrip`](PCUserDetection/ChoiceStrip.cs) and
+  bordered panels rather than combo boxes, check boxes and bordered text boxes.
+  Those three paint parts of themselves in system colours that no property
+  turns off, which looks wrong against the dark palette; a button and a panel
+  obey the colours they are given.
+- A failed alert never interrupts anything. It comes back as a result that ends
+  up on the status line, so an unreachable mail server costs you the alert and
+  nothing else.
 - Recognition used to live in a separate `FaceDetection` console app that the
   form launched as a child process and parsed stdout from. It now runs
   in-process, which removed the hardcoded path to the console executable and
   avoids reloading the ONNX models on every capture.
 - A running instance locks `bin\Debug\PCUserDetection.exe`, so close the app
   before rebuilding.
+
