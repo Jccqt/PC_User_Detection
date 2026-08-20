@@ -85,23 +85,42 @@ namespace PCUserDetection
         {
             if(currentFrame != null)
             {
-                string filename = "Anonymous.jpeg";
-                string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\AnonymousImages";
-                string filepath = System.IO.Path.Combine(directory, filename);
-                currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                lblAlert.Visible = true;
+                // this handler is async void, so an exception escaping it goes
+                // unhandled and terminates the app. the frame save, the
+                // FaceDetection child process and the location lookup can all
+                // throw, so the whole body has to be guarded here.
+                try
+                {
+                    string filename = "Anonymous.jpeg";
+                    string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\AnonymousImages";
+                    string filepath = System.IO.Path.Combine(directory, filename);
+                    currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    lblAlert.Visible = true;
 
-                if (RunFaceAiSharpConsole())
-                {
-                    lblAlert.Text = "The user was verified";
-                    lblAlert.ForeColor = System.Drawing.Color.Green;
+                    if (RunFaceAiSharpConsole())
+                    {
+                        lblAlert.Text = "The user was verified";
+                        lblAlert.ForeColor = System.Drawing.Color.Green;
+                    }
+                    else
+                    {
+                        lblAlert.Text = "The user was anonymous";
+                        lblAlert.ForeColor = System.Drawing.Color.Red;
+                        string deviceLocation = await getLocation();
+                        Console.WriteLine(deviceLocation);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    lblAlert.Text = "The user was anonymous";
+                    lblAlert.Visible = true;
+                    lblAlert.Text = "The detection failed";
                     lblAlert.ForeColor = System.Drawing.Color.Red;
-                    string deviceLocation = await getLocation();
-                    Console.WriteLine(deviceLocation);
+
+                    // for debugging purposes
+                    Console.WriteLine(ex);
+
+                    MessageBox.Show("The detection could not be completed.\n\n" + ex.Message,
+                        "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
