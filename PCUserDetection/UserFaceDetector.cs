@@ -4,10 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Net.Http;
-using Newtonsoft.Json;
 
 namespace PCUserDetection
 {
@@ -81,13 +78,11 @@ namespace PCUserDetection
             }    
         }
 
-        private async void btnDetect_Click(object sender, EventArgs e)
+        private void btnDetect_Click(object sender, EventArgs e)
         {
             if(currentFrame != null)
             {
-                // this handler is async void, so an exception escaping it goes
-                // unhandled and terminates the app. the frame save, the
-                // FaceDetection child process and the location lookup can all
+                // the frame save and the FaceDetection child process can both
                 // throw, so the whole body has to be guarded here.
                 try
                 {
@@ -106,8 +101,6 @@ namespace PCUserDetection
                     {
                         lblAlert.Text = "The user was anonymous";
                         lblAlert.ForeColor = System.Drawing.Color.Red;
-                        string deviceLocation = await getLocation();
-                        Console.WriteLine(deviceLocation);
                     }
                 }
                 catch (Exception ex)
@@ -197,43 +190,6 @@ namespace PCUserDetection
             }
         }
 
-        private async Task<string> getLocation()
-        {
-            string token = Environment.GetEnvironmentVariable("IPINFO_TOKEN");
-            
-            using (HttpClient client = new HttpClient())
-            {
-                string url = $"https://ipinfo.io?token={token}";
-                string json = await client.GetStringAsync(url);
-                IpInfoResponse location = JsonConvert.DeserializeObject<IpInfoResponse>(json);
-
-                // for debugging purposes
-                Console.WriteLine($"IP: {location.ip}");
-                Console.WriteLine($"City: {location.city}");
-                Console.WriteLine($"Region: {location.region}");
-                Console.WriteLine($"Country: {location.country}");
-                Console.WriteLine($"Coordinates: {location.loc}");
-                Console.WriteLine($"Postal: {location.postal}");
-                Console.WriteLine($"TimeZone: {location.timezone}");
-                Console.WriteLine($"ISP: {location.org}");
-
-                // will return the location details of the device
-                return $@"
-                    Your device was being accessed by an anonymous user!
-                    
-                    Here's the IP and Location details:
-
-                    IP: {location.ip}
-                    City: {location.city}
-                    Region: {location.region}
-                    Country: {location.country}
-                    Coordinates: {location.loc}
-                    Postal: {location.postal}
-                    TimeZone: {location.timezone}
-                    ISP: {location.org}";
-            }
-        }
-
         private void btnImages_Click(object sender, EventArgs e)
         {
             if (cbCamera.SelectedIndex > 0)
@@ -247,17 +203,5 @@ namespace PCUserDetection
             images.Show();
             this.Hide();
         }
-    }
-
-    public class IpInfoResponse
-    {
-        public string ip { get; set; }
-        public string city { get; set; }
-        public string region { get; set; }
-        public string country { get; set; }
-        public string loc { get; set; } // latitude and longitude
-        public string org { get; set; } // ISP
-        public string postal { get; set; }
-        public string timezone { get; set; }
     }
 }
