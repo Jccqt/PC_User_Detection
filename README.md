@@ -60,7 +60,9 @@ is stopped.
 
 Face recognition runs in-process using [FaceAiSharp](https://github.com/georg-jung/FaceAiSharp),
 which wraps two ONNX models: SCRFD for face detection with landmarks, and
-ArcFace for generating embeddings.
+ArcFace for generating embeddings. SCRFD is licensed for non-commercial
+research only, which limits what the app as a whole may be used for; see
+[Licence](#licence).
 
 [`FaceRecognizer`](PCUserDetection/FaceRecognizer.cs) does the work:
 
@@ -189,3 +191,25 @@ interface, with nothing above it changing.
 - A running instance locks `bin\Debug\PCUserDetection.exe`, so close the app
   before rebuilding.
 
+## Licence
+
+The code in this repository is [MIT licensed](LICENSE). Do what you like with
+it, as long as the copyright notice comes along.
+
+> **Not for commercial use as it stands.** The face detection model this app
+> depends on is licensed for non-commercial research only. That restriction
+> comes from the model rather than from this code, and it applies no matter
+> what the repository itself is licensed under.
+
+The dependencies are not all as permissive as the code that uses them:
+
+| Dependency | Licence | What it means for you |
+| --- | --- | --- |
+| **SCRFD model**, via `FaceAiSharp.Bundle` | Non-commercial research only | The face detector. [Its licence](https://github.com/deepinsight/insightface/tree/master/python-package#model-zoo) is the restriction above. Swapping the detector for a permissively licensed model is the way out of it. |
+| **ImageSharp** | Six Labors Split | Apache 2.0 for open source projects and for organisations under 1M USD annual gross revenue. A paid licence for everyone else. |
+| **AForge.Video.DirectShow** | LGPL v3 | The webcam capture. Referenced as a NuGet package and never modified, which is what LGPL asks for. Keep the notice, and leave the assembly replaceable. |
+| **MailKit**, **MimeKit** | MIT | No conditions beyond the notice. |
+| **FaceAiSharp**, **ArcFace model**, **ONNX Runtime**, **ProtectedData** | MIT / Apache 2.0 | No conditions beyond the notice. |
+
+Each package's full licence text ships with it and can be read in the local
+NuGet cache under `%USERPROFILE%\.nuget\packages\`.
