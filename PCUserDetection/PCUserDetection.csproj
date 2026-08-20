@@ -26,6 +26,8 @@
 
   <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
+    <PackageReference Include="FaceAiSharp.Bundle" Version="0.5.23" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
   </ItemGroup>
 
   <ItemGroup>

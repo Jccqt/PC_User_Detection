@@ -1,7 +1,6 @@
 ﻿using AForge.Video;
 using AForge.Video.DirectShow;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -16,6 +15,7 @@ namespace PCUserDetection
         Bitmap currentFrame; // current frame from webcam
         AddUser addUser;
         Images images;
+        FaceRecognizer faceRecognizer;
         private static UserFaceDetector userFaceDetectorInstance;
 
         public UserFaceDetector()
@@ -38,6 +38,7 @@ namespace PCUserDetection
             // Initializes singleton for these classes when UserFaceDetector page loads
             addUser = AddUser.GetAddUserInstance();
             images = Images.GetImagesInstance();
+            faceRecognizer = FaceRecognizer.GetFaceRecognizerInstance();
 
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice); // will get all camera devices
 
@@ -82,17 +83,19 @@ namespace PCUserDetection
         {
             if(currentFrame != null)
             {
-                // the frame save and the FaceDetection child process can both
-                // throw, so the whole body has to be guarded here.
+                // both the frame save and the face detection can throw, so the
+                // whole body has to be guarded here.
                 try
                 {
                     string filename = "Anonymous.jpeg";
-                    string directory = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"\AnonymousImages";
+                    string directory = System.IO.Path.Combine(GetProjectDirectory(), "AnonymousImages");
                     string filepath = System.IO.Path.Combine(directory, filename);
                     currentFrame.Save(filepath, System.Drawing.Imaging.ImageFormat.Jpeg);
                     lblAlert.Visible = true;
 
-                    if (RunFaceAiSharpConsole())
+                    string capturedImagesDirectory = System.IO.Path.Combine(GetProjectDirectory(), "CapturedImages");
+
+                    if (faceRecognizer.IsUserVerified(filepath, capturedImagesDirectory))
                     {
                         lblAlert.Text = "The user was verified";
                         lblAlert.ForeColor = System.Drawing.Color.Green;
@@ -118,28 +121,10 @@ namespace PCUserDetection
             }
         }
 
-        private bool RunFaceAiSharpConsole()
+        // the image folders live next to the project file, one level above bin\<Config>\
+        private static string GetProjectDirectory()
         {
-            bool result = false;
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName + @"..\..\FaceDetection\bin\Debug\net8.0\FaceDetection.exe",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (Process process = Process.Start(psi))
-            {
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-
-                if(bool.TryParse(output.Trim(), out bool res))
-                {
-                    result = res;
-                }
-            }
-            return result;
+            return Directory.GetParent(System.Environment.CurrentDirectory).Parent.FullName;
         }
 
         private void btnRestart_Click(object sender, EventArgs e)
