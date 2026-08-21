@@ -11,26 +11,31 @@ namespace PCUserDetection
     /// The image folders are resolved from the folder the executable lives in,
     /// not from the working directory, so the app behaves the same whether it is
     /// started by Visual Studio, by "dotnet run", or by double-clicking the
-    /// executable. Settings instead live under AppData; see <see cref="UserFolder"/>.
+    /// executable; <see cref="ResolveImageRoot"/> covers where they land in a
+    /// development tree and in a published one. Settings live under AppData in
+    /// either case; see <see cref="UserFolder"/>.
     /// </remarks>
     internal static class AppPaths
     {
-        /// <summary>The project folder, two levels above bin\&lt;Config&gt;\.</summary>
-        private static string ProjectDirectory
-        {
-            get { return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..")); }
-        }
+        /// <summary>The project file that marks a development build's tree.</summary>
+        private const string ProjectFile = "PCUserDetection.csproj";
+
+        /// <summary>
+        /// The folder the two image folders sit in. Resolved once, since the
+        /// executable does not move while the app is running.
+        /// </summary>
+        private static readonly string ImageRoot = ResolveImageRoot();
 
         /// <summary>Holds the most recent frame captured for verification.</summary>
         public static string AnonymousImages
         {
-            get { return EnsureDirectory(Path.Combine(ProjectDirectory, "AnonymousImages")); }
+            get { return EnsureDirectory(Path.Combine(ImageRoot, "AnonymousImages")); }
         }
 
         /// <summary>Holds the registered user images to compare against.</summary>
         public static string CapturedImages
         {
-            get { return EnsureDirectory(Path.Combine(ProjectDirectory, "CapturedImages")); }
+            get { return EnsureDirectory(Path.Combine(ImageRoot, "CapturedImages")); }
         }
 
         /// <summary>Where the chosen theme is remembered.</summary>
@@ -77,6 +82,36 @@ namespace PCUserDetection
         public static string AnonymousImage
         {
             get { return Path.Combine(AnonymousImages, "Anonymous.jpeg"); }
+        }
+
+        /// <summary>
+        /// The project folder during development, and the folder the settings
+        /// already live in once the app has been published.
+        /// </summary>
+        /// <remarks>
+        /// A development build sits in bin\&lt;Config&gt;\, below the project
+        /// folder, and keeping the images there means a rebuild does not lose
+        /// the ones a developer registered. A published build has no project
+        /// folder above it: counting folders upwards from, say, C:\Apps\PCUD
+        /// lands on C:\, which is the wrong place to write images to and on many
+        /// machines cannot be written to at all. So the project file is looked
+        /// for rather than assumed, and when it is not there the images go
+        /// beside the settings, under AppData, where writing always succeeds.
+        /// </remarks>
+        private static string ResolveImageRoot()
+        {
+            DirectoryInfo directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, ProjectFile)))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return UserFolder;
         }
 
         // a fresh clone or a cleaned build can be missing these, and creating

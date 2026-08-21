@@ -147,9 +147,13 @@ PCUserDetection/
 ```
 
 Image paths are resolved in one place, [`AppPaths`](PCUserDetection/AppPaths.cs),
-from the folder the executable lives in. Both folders are created on demand if
-they are missing. The settings files live under `%APPDATA%` instead, and are
-resolved from the same place.
+from the folder the executable lives in. Running from the source tree, it walks
+up to the folder holding `PCUserDetection.csproj` and keeps the two folders
+there, so a rebuild does not lose the images already registered. A published
+build has no project folder above it, so the images go under
+`%APPDATA%\PCUserDetection` instead, which is somewhere the person running the
+app can always write. Both folders are created on demand if they are missing.
+The settings files live under `%APPDATA%` in either case.
 
 The alert is split so that the decision and the delivery stay apart:
 [`EmailAlert`](PCUserDetection/EmailAlert.cs) decides whether to send and writes

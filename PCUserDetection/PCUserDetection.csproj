@@ -6,8 +6,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>PCUserDetection</RootNamespace>
     <AssemblyName>PCUserDetection</AssemblyName>
-    <!-- Keeps the output at bin\<Config>\ (no TFM sub-folder) so the relative
-         CapturedImages / AnonymousImages paths used at runtime stay valid. -->
+    <!-- Keeps the output at bin\<Config>\ (no TFM sub-folder), which is a
+         shorter path to reach and to point a shortcut at. AppPaths finds the
+         project folder by looking for this file, so the depth is its own choice
+         rather than something the runtime paths depend on. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <!-- AForge 2.2.5 only ships .NET Framework binaries; they run fine on
          .NET 8 on Windows, so the compatibility warning is not actionable. -->
