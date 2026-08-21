@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -343,7 +344,11 @@ namespace PCUserDetection
 
         private void Save_Click(object sender, EventArgs e)
         {
-            settings = Collect();
+            EmailSettings entered;
+
+            if (!TryCollect(out entered)) return;
+
+            settings = entered;
 
             try
             {
@@ -368,7 +373,9 @@ namespace PCUserDetection
 
         private async void Test_Click(object sender, EventArgs e)
         {
-            EmailSettings entered = Collect();
+            EmailSettings entered;
+
+            if (!TryCollect(out entered)) return;
 
             SetStatus("Sending...", Tone.Muted);
             test.Enabled = false;
@@ -386,20 +393,48 @@ namespace PCUserDetection
             }
         }
 
-        /// <summary>Reads the screen into settings, without saving them.</summary>
-        private EmailSettings Collect()
+        /// <summary>
+        /// Reads the screen into settings, without saving them. Returns false,
+        /// having said why on the status line, when a number on screen cannot be
+        /// used: what was typed is left alone to be corrected rather than being
+        /// quietly swapped back for the value it was replacing.
+        /// </summary>
+        private bool TryCollect(out EmailSettings collected)
         {
-            var collected = new EmailSettings
+            collected = null;
+
+            int cooldownMinutes;
+
+            if (!TryReadNumber(cooldown, 0, int.MaxValue,
+                    "The cooldown has to be a whole number of minutes, and cannot be negative.",
+                    out cooldownMinutes))
+            {
+                return false;
+            }
+
+            // the port is only read when it is in play; a folder drop leaves the
+            // box disabled, and refusing to save over something that cannot be
+            // reached to be corrected would be a dead end
+            int portNumber = settings.Port;
+
+            if (delivery.Value == EmailDelivery.Smtp &&
+                !TryReadNumber(port, 1, 65535,
+                    "The port has to be a whole number between 1 and 65535.", out portNumber))
+            {
+                return false;
+            }
+
+            collected = new EmailSettings
             {
                 Enabled = enabled.Value,
                 AttachPhoto = attachPhoto.Value,
                 Delivery = delivery.Value,
                 Security = security.Value,
-                CooldownMinutes = ParseNumber(cooldown, settings.CooldownMinutes),
+                CooldownMinutes = cooldownMinutes,
                 From = from.Text.Trim(),
                 To = to.Text.Trim(),
                 Host = host.Text.Trim(),
-                Port = ParseNumber(port, settings.Port),
+                Port = portNumber,
                 Username = username.Text.Trim(),
                 // the encrypted blob is carried across untouched unless the person
                 // typed over the placeholder, so saving does not need the password
@@ -409,13 +444,28 @@ namespace PCUserDetection
 
             if (password.Text != PasswordPlaceholder) collected.Password = password.Text;
 
-            return collected;
+            return true;
         }
 
-        private static int ParseNumber(TextBox box, int fallback)
+        /// <summary>
+        /// Reads a whole number in the given range out of a box. Anything else
+        /// puts <paramref name="problem"/> on the status line and leaves the
+        /// caret in the box that has to be fixed.
+        /// </summary>
+        private bool TryReadNumber(TextBox box, int least, int most, string problem, out int value)
         {
-            int parsed;
-            return int.TryParse(box.Text.Trim(), out parsed) ? parsed : fallback;
+            // the invariant culture, so a thousands separator or a stray space is
+            // a mistake to point at rather than something a machine abroad accepts
+            bool read = int.TryParse(box.Text.Trim(), NumberStyles.Integer,
+                CultureInfo.InvariantCulture, out value);
+
+            if (read && value >= least && value <= most) return true;
+
+            SetStatus(problem, Tone.Bad);
+            box.Focus();
+            box.SelectAll();
+
+            return false;
         }
 
         #endregion

@@ -102,6 +102,11 @@ namespace PCUserDetection
         /// </summary>
         public string Describe()
         {
+            // a negative wait is not a shorter one: anything at or below zero is
+            // treated as no cooldown at all, so it would alert on every frame
+            // rather than the once every few minutes that was being asked for
+            if (CooldownMinutes < 0) return "The cooldown cannot be negative.";
+
             if (string.IsNullOrWhiteSpace(From)) return "Enter the address the alert is sent from.";
             if (string.IsNullOrWhiteSpace(To)) return "Enter the address the alert is sent to.";
 
