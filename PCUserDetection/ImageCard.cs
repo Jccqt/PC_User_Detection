@@ -38,6 +38,20 @@ namespace PCUserDetection
                 Image = LoadWithoutLocking(filePath)
             };
 
+            if (thumbnail.Image == null)
+            {
+                // the file is empty, truncated or not an image at all; the card is
+                // still listed so the file can be seen and removed
+                thumbnail.Controls.Add(new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = Theme.Small,
+                    ForeColor = Theme.TextMuted,
+                    Text = "Preview unavailable",
+                    TextAlign = ContentAlignment.MiddleCenter
+                });
+            }
+
             var name = new Label
             {
                 Dock = DockStyle.Fill,
@@ -105,12 +119,24 @@ namespace PCUserDetection
             return name;
         }
 
+        /// <summary>
+        /// Reads the image into memory, or returns null when it cannot be decoded.
+        /// A file that was never finished writing must not stop the gallery, and
+        /// with it the whole app, from opening.
+        /// </summary>
         private static System.Drawing.Image LoadWithoutLocking(string filePath)
         {
-            using (var stream = File.OpenRead(filePath))
-            using (var loaded = System.Drawing.Image.FromStream(stream))
+            try
             {
-                return new Bitmap(loaded);
+                using (var stream = File.OpenRead(filePath))
+                using (var loaded = System.Drawing.Image.FromStream(stream))
+                {
+                    return new Bitmap(loaded);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

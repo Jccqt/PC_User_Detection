@@ -502,10 +502,22 @@ namespace PCUserDetection
             foreach (Control card in flpImages.Controls.Cast<Control>().ToList()) card.Dispose();
             flpImages.Controls.Clear();
 
-            string[] imageFiles = Directory.GetFiles(AppPaths.CapturedImages, "*.*")
-                .Where(file => file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(file => file)
-                .ToArray();
+            string[] imageFiles;
+
+            try
+            {
+                imageFiles = Directory.GetFiles(AppPaths.CapturedImages, "*.*")
+                    .Where(file => file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(file => file)
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                flpImages.Controls.Add(GalleryMessage(
+                    "The registered images could not be listed.\n\n" + ex.Message));
+                lblCount.Text = "Images unavailable";
+                return;
+            }
 
             foreach (string imageFile in imageFiles)
             {
@@ -516,18 +528,25 @@ namespace PCUserDetection
 
             if (imageFiles.Length == 0)
             {
-                flpImages.Controls.Add(new Label
-                {
-                    AutoSize = true,
-                    Font = Theme.Body,
-                    ForeColor = Theme.TextMuted,
-                    Text = "No images yet. Use Add user to register the person at the PC."
-                });
+                flpImages.Controls.Add(GalleryMessage(
+                    "No images yet. Use Add user to register the person at the PC."));
             }
 
             lblCount.Text = imageFiles.Length == 1
                 ? "1 registered image"
                 : imageFiles.Length + " registered images";
+        }
+
+        /// <summary>Text shown in place of the cards when there is nothing to show.</summary>
+        private static Label GalleryMessage(string text)
+        {
+            return new Label
+            {
+                AutoSize = true,
+                Font = Theme.Body,
+                ForeColor = Theme.TextMuted,
+                Text = text
+            };
         }
 
         private void ImageCard_DeleteRequested(object sender, EventArgs e)
