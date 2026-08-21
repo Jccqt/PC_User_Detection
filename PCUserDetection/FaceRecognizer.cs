@@ -1,6 +1,7 @@
 using FaceAiSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 // ImageSharp and System.Drawing both have an Image type, so the ImageSharp one
@@ -42,52 +43,70 @@ namespace PCUserDetection
         }
 
         /// <summary>
-        /// Returns true when the face in <paramref name="anonymousImagePath"/> matches
-        /// any of the registered images in <paramref name="capturedImagesDirectory"/>.
+        /// Returns true when every face in <paramref name="anonymousImagePath"/> matches
+        /// one of the registered images in <paramref name="capturedImagesDirectory"/>.
         /// </summary>
         public bool IsUserVerified(string anonymousImagePath, string capturedImagesDirectory)
         {
-            float[] anonymousEmbedding = GenerateEmbedding(anonymousImagePath);
+            List<float[]> anonymousEmbeddings = GenerateEmbeddings(anonymousImagePath, false);
 
             // no face in the captured frame, so there is nobody to verify
-            if (anonymousEmbedding == null) return false;
+            if (anonymousEmbeddings.Count == 0) return false;
 
             string[] imageFiles = Directory.GetFiles(capturedImagesDirectory, "*.*").
                 Where(file => file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)).ToArray();
 
+            var registeredEmbeddings = new List<float[]>();
+
             foreach (string userImage in imageFiles)
             {
-                float[] userEmbedding = GenerateEmbedding(userImage);
-
-                // a registered image without a detectable face is skipped rather than
+                // a registered image is a portrait of one person, so only its largest
+                // face counts; one without a detectable face is skipped rather than
                 // aborting the comparison against the remaining images
-                if (userEmbedding == null) continue;
-
-                if (FaceAiSharp.Extensions.GeometryExtensions.Dot(anonymousEmbedding, userEmbedding) >= MatchThreshold)
-                {
-                    return true;
-                }
+                List<float[]> userEmbeddings = GenerateEmbeddings(userImage, true);
+                if (userEmbeddings.Count > 0) registeredEmbeddings.Add(userEmbeddings[0]);
             }
-            return false;
+
+            // everyone in the frame has to be someone registered: a stranger standing
+            // next to a registered user is still a stranger in front of the machine
+            return anonymousEmbeddings.All(anonymousEmbedding => registeredEmbeddings.Any(
+                userEmbedding => FaceAiSharp.Extensions.GeometryExtensions.Dot(
+                    anonymousEmbedding, userEmbedding) >= MatchThreshold));
         }
 
         /// <summary>
-        /// Returns the face embedding for the first face found in the image,
-        /// or null when the image contains no detectable face.
+        /// Returns an embedding for every face in the image, or only for the largest
+        /// one when <paramref name="largestFaceOnly"/> is set. The list comes back
+        /// empty when the image contains no detectable face.
         /// </summary>
-        private float[] GenerateEmbedding(string imagePath)
+        private List<float[]> GenerateEmbeddings(string imagePath, bool largestFaceOnly)
         {
+            var embeddings = new List<float[]>();
+
             using (var image = ImageSharpImage.Load<Rgb24>(imagePath))
             {
-                var faces = faceDetector.DetectFaces(image).ToList();
+                // the detector hands the faces back in no particular order, so they are
+                // sorted by box area: taking the largest is then a deliberate choice
+                // rather than whichever face happened to come out first
+                IEnumerable<FaceDetectorResult> faces = faceDetector.DetectFaces(image)
+                    .Where(face => face.Landmarks != null)
+                    .OrderByDescending(face => face.Box.Width * face.Box.Height);
 
-                if (faces.Count == 0 || faces[0].Landmarks == null) return null;
+                if (largestFaceOnly) faces = faces.Take(1);
 
-                var face = faces[0];
-
-                embeddingsGenerator.AlignFaceUsingLandmarks(image, face.Landmarks);
-                return embeddingsGenerator.GenerateEmbedding(image);
+                foreach (var face in faces)
+                {
+                    // aligning mutates the image it is handed, so each face is aligned
+                    // on its own copy and the frame itself is left intact for the next
+                    using (var alignedFace = image.Clone())
+                    {
+                        embeddingsGenerator.AlignFaceUsingLandmarks(alignedFace, face.Landmarks);
+                        embeddings.Add(embeddingsGenerator.GenerateEmbedding(alignedFace));
+                    }
+                }
             }
+
+            return embeddings;
         }
     }
 }
