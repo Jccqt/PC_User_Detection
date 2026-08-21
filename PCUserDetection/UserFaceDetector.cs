@@ -28,6 +28,15 @@ namespace PCUserDetection
 
         /// <summary>The detail behind that failure, until it has been reported.</summary>
         private string cameraListError;
+
+        /// <summary>
+        /// What to say about a camera that has failed, until it is started
+        /// again. Null while there is nothing wrong with it.
+        /// </summary>
+        private string cameraFailure;
+
+        /// <summary>True between starting the camera and its first frame arriving.</summary>
+        private bool cameraStarting;
         private Screen currentScreen = Screen.Detect;
         private StatusKind statusKind = StatusKind.Neutral;
 
@@ -323,9 +332,60 @@ namespace PCUserDetection
         {
             if (cameras == null || cameras.Count == 0 || cbCamera.SelectedIndex < 0) return;
 
+            // a failure belongs to the attempt that reported it; this is a fresh
+            // one, and the screen says so until the camera says otherwise
+            cameraFailure = null;
+            cameraView.Placeholder = "The camera feed will appear here.";
+
             // Start is a no-op when this device is already the one running, so
             // moving between Detect and Add user does not restart the feed.
             cameraView.Start(cameras[cbCamera.SelectedIndex].MonikerString);
+
+            // a feed that is already delivering is ready now; a fresh one has
+            // nothing behind Capture until its first frame arrives, and saying
+            // "Ready" before then is the whole of what went wrong here
+            cameraStarting = !cameraView.HasFrame;
+            btnPrimary.Enabled = cameraView.HasFrame;
+        }
+
+        /// <summary>
+        /// The feed failed, which usually means another app is holding the
+        /// camera. There is no frame behind Capture until a later attempt
+        /// works, so it says so rather than leaving "Ready" standing.
+        /// </summary>
+        private void cameraView_Failed(object sender, CameraFailedEventArgs e)
+        {
+            cameraStarting = false;
+
+            // a camera that was working and stopped is a different thing to one
+            // that never started, and the likely cause differs with it
+            cameraFailure = e.WasDelivering
+                ? "The camera stopped responding."
+                : "The camera is unavailable. Another app may be using it.";
+
+            cameraView.Placeholder = e.WasDelivering
+                ? "The camera stopped responding. Reconnect it and pick it again."
+                : "The camera could not be started. It may already be in use by another app.";
+
+            btnPrimary.Enabled = false;
+            btnSecondary.Enabled = false;
+
+            // the device's own wording is too technical for the status line, but
+            // it is the only clue when the cause is something else entirely
+            Console.WriteLine(e.Detail);
+
+            ResetStatus();
+        }
+
+        /// <summary>
+        /// The first frame has arrived, so there is something behind Capture at
+        /// last and the screen can say so.
+        /// </summary>
+        private void cameraView_Ready(object sender, EventArgs e)
+        {
+            cameraStarting = false;
+            btnPrimary.Enabled = true;
+            ResetStatus();
         }
 
         /// <summary>Draws the border and the chevron the clipped combo box cannot.</summary>
@@ -436,7 +496,9 @@ namespace PCUserDetection
             }
             finally
             {
-                btnPrimary.Enabled = true;
+                // the camera can fail while the check is running, and Capture
+                // has nothing to offer once it has
+                btnPrimary.Enabled = cameraFailure == null;
             }
         }
 
@@ -525,6 +587,18 @@ namespace PCUserDetection
             if (cameras != null && cameras.Count == 0)
             {
                 SetStatus("No camera was found.", StatusKind.Bad);
+                return;
+            }
+
+            if (cameraFailure != null)
+            {
+                SetStatus(cameraFailure, StatusKind.Bad);
+                return;
+            }
+
+            if (cameraStarting)
+            {
+                SetStatus("Starting the camera...", StatusKind.Neutral);
                 return;
             }
 

@@ -3,10 +3,31 @@ using AForge.Video.DirectShow;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace PCUserDetection
 {
+    /// <summary>Carries what the camera said when the feed failed.</summary>
+    internal class CameraFailedEventArgs : EventArgs
+    {
+        public CameraFailedEventArgs(string detail, bool wasDelivering)
+        {
+            Detail = detail;
+            WasDelivering = wasDelivering;
+        }
+
+        /// <summary>The device's own description of the failure, or the view's when it timed out.</summary>
+        public string Detail { get; }
+
+        /// <summary>
+        /// True when the feed had been delivering frames and stopped, as opposed
+        /// to never having produced one. The two have different causes and are
+        /// worth telling apart on screen.
+        /// </summary>
+        public bool WasDelivering { get; }
+    }
+
     /// <summary>
     /// Shows the live webcam feed and hands out the frame that is currently on
     /// screen. The Detect and Add user screens share one instance, so the camera
@@ -23,15 +44,56 @@ namespace PCUserDetection
         private VideoCaptureDevice device;
         private string activeMoniker;
 
+        /// <summary>
+        /// How long the feed may go without a frame before it is called failed.
+        /// A camera another app is holding opens and runs without ever
+        /// delivering, and it never raises an error, so the silence is the only
+        /// sign there is. Long enough that a slow camera starting up is not
+        /// mistaken for one.
+        /// </summary>
+        private const int StallTimeoutMs = 8000;
+
+        private readonly System.Windows.Forms.Timer watchdog;
+
+        // written from the capture thread on every frame and read by the
+        // watchdog on the UI thread
+        private long lastFrameTicks;
+        private int frameSeen;
+
+        // only ever touched on the UI thread, in ReportFailure
+        private bool failureReported;
+
         public CameraView()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
                      ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             BackColor = Theme.Canvas;
+
+            watchdog = new System.Windows.Forms.Timer { Interval = 1000 };
+            watchdog.Tick += OnWatchdogTick;
         }
 
         /// <summary>Shown in the middle of the view while there is no frame to draw.</summary>
         public string Placeholder { get; set; } = "The camera feed will appear here.";
+
+        /// <summary>
+        /// Raised when the feed fails, which is what a camera another app is
+        /// holding does. Raised on the UI thread, once per Start, and the view
+        /// has already dropped the device by the time it arrives.
+        /// </summary>
+        public event EventHandler<CameraFailedEventArgs> Failed;
+
+        /// <summary>
+        /// Raised on the UI thread when the feed's first frame arrives. Until it
+        /// does there is nothing to capture, however willing the device looked.
+        /// </summary>
+        public event EventHandler Ready;
+
+        /// <summary>True once the feed has delivered a frame, and until it is stopped.</summary>
+        public bool HasFrame
+        {
+            get { lock (frameLock) { return frame != null; } }
+        }
 
         /// <summary>True while the view is held on the frame that was captured.</summary>
         public bool IsFrozen
@@ -60,14 +122,25 @@ namespace PCUserDetection
             Stop();
 
             activeMoniker = monikerString;
+            failureReported = false;
+            frameSeen = 0;
+            Interlocked.Exchange(ref lastFrameTicks, Environment.TickCount64);
+
             device = new VideoCaptureDevice(monikerString);
             device.NewFrame += OnNewFrame;
+            device.VideoSourceError += OnVideoSourceError;
             device.Start();
+
+            // the device is up, but a device that is up is not the same as one
+            // that is delivering, and only the watchdog can tell the difference
+            watchdog.Start();
             Resume();
         }
 
         public void Stop()
         {
+            watchdog.Stop();
+
             if (device != null)
             {
                 if (device.IsRunning)
@@ -76,6 +149,7 @@ namespace PCUserDetection
                     device.WaitForStop();
                 }
                 device.NewFrame -= OnNewFrame;
+                device.VideoSourceError -= OnVideoSourceError;
                 device = null;
             }
 
@@ -114,6 +188,10 @@ namespace PCUserDetection
 
         private void OnNewFrame(object sender, NewFrameEventArgs e)
         {
+            // the feed is alive whether or not the view is taking its frames, so
+            // the watchdog is fed before the freeze is honoured
+            Interlocked.Exchange(ref lastFrameTicks, Environment.TickCount64);
+
             if (IsFrozen) return;
 
             var newFrame = (Bitmap)e.Frame.Clone();
@@ -134,7 +212,81 @@ namespace PCUserDetection
 
             // Invalidate is not safe to call from the capture thread, and
             // BeginInvoke does not block it the way Invoke would.
-            if (IsHandleCreated) BeginInvoke((Action)Invalidate);
+            if (!IsHandleCreated) return;
+
+            BeginInvoke((Action)Invalidate);
+
+            if (Interlocked.Exchange(ref frameSeen, 1) == 0) BeginInvoke((Action)RaiseReady);
+        }
+
+        private void RaiseReady()
+        {
+            // Stop may have run while this was queued
+            if (device == null) return;
+
+            var handler = Ready;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Catches the feed that opened without complaint and then delivered
+        /// nothing, which is what a camera another app is holding does, and the
+        /// one that was delivering and quietly stopped.
+        /// </summary>
+        private void OnWatchdogTick(object sender, EventArgs e)
+        {
+            if (device == null)
+            {
+                watchdog.Stop();
+                return;
+            }
+
+            if (Environment.TickCount64 - Interlocked.Read(ref lastFrameTicks) < StallTimeoutMs) return;
+
+            ReportFailure(device, HasFrame
+                ? "The feed stopped delivering frames."
+                : "The feed did not deliver a frame within " + (StallTimeoutMs / 1000) + " seconds.");
+        }
+
+        /// <summary>
+        /// The feed could not be opened, or has stopped delivering. Raised on
+        /// the capture thread, so the report is handed to the UI thread the way
+        /// a new frame is.
+        /// </summary>
+        private void OnVideoSourceError(object sender, VideoSourceErrorEventArgs e)
+        {
+            if (!IsHandleCreated) return;
+
+            var source = (VideoCaptureDevice)sender;
+            string detail = e.Description;
+
+            BeginInvoke((Action)(() => ReportFailure(source, detail)));
+        }
+
+        /// <summary>
+        /// Reports a feed that is not coming back, from whichever of the two
+        /// noticed first. Always on the UI thread, so the guard below is all
+        /// that is needed to keep the error and the watchdog from both
+        /// reporting the same failure.
+        /// </summary>
+        private void ReportFailure(VideoCaptureDevice source, string detail)
+        {
+            // Stop, or a start on another camera, may have run while this was
+            // queued; a device that is no longer the one on screen has nothing
+            // left to say about it
+            if (device != source || failureReported) return;
+            failureReported = true;
+
+            // Stop clears the frame, and whether there was one is the difference
+            // between a camera that never started and one that gave up
+            bool wasDelivering = HasFrame;
+
+            // the feed is not coming back on its own, so the device is dropped
+            // rather than left running dead behind a frame that will never change
+            Stop();
+
+            var handler = Failed;
+            if (handler != null) handler(this, new CameraFailedEventArgs(detail, wasDelivering));
         }
 
         private void SetFrame(Bitmap newFrame)
@@ -181,7 +333,11 @@ namespace PCUserDetection
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing) Stop();
+            if (disposing)
+            {
+                Stop();
+                watchdog.Dispose();
+            }
             base.Dispose(disposing);
         }
     }

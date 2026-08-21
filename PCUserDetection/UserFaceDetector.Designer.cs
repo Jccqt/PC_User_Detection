@@ -243,6 +243,8 @@ namespace PCUserDetection
             //
             this.cameraView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cameraView.Name = "cameraView";
+            this.cameraView.Failed += new System.EventHandler<PCUserDetection.CameraFailedEventArgs>(this.cameraView_Failed);
+            this.cameraView.Ready += new System.EventHandler(this.cameraView_Ready);
             //
             // pnlGallery
             //
