@@ -18,6 +18,7 @@ namespace PCUserDetection
         // OnPaint reads have to be guarded
         private readonly object frameLock = new object();
         private Bitmap frame;
+        private bool frozen;
 
         private VideoCaptureDevice device;
         private string activeMoniker;
@@ -33,7 +34,10 @@ namespace PCUserDetection
         public string Placeholder { get; set; } = "The camera feed will appear here.";
 
         /// <summary>True while the view is held on the frame that was captured.</summary>
-        public bool IsFrozen { get; private set; }
+        public bool IsFrozen
+        {
+            get { lock (frameLock) { return frozen; } }
+        }
 
         public bool IsRunning
         {
@@ -59,7 +63,7 @@ namespace PCUserDetection
             device = new VideoCaptureDevice(monikerString);
             device.NewFrame += OnNewFrame;
             device.Start();
-            IsFrozen = false;
+            Resume();
         }
 
         public void Stop()
@@ -76,20 +80,24 @@ namespace PCUserDetection
             }
 
             activeMoniker = null;
-            IsFrozen = false;
+            Resume();
             SetFrame(null);
         }
 
-        /// <summary>Holds the view on the frame that is on screen.</summary>
+        /// <summary>
+        /// Holds the view on the frame that is on screen. Taken under the frame
+        /// lock, so a frame the feed is already delivering cannot replace that
+        /// one once this has returned.
+        /// </summary>
         public void Freeze()
         {
-            IsFrozen = true;
+            lock (frameLock) { frozen = true; }
         }
 
         /// <summary>Lets the live feed take the view back over.</summary>
         public void Resume()
         {
-            IsFrozen = false;
+            lock (frameLock) { frozen = false; }
         }
 
         /// <summary>
@@ -108,7 +116,21 @@ namespace PCUserDetection
         {
             if (IsFrozen) return;
 
-            SetFrame((Bitmap)e.Frame.Clone());
+            var newFrame = (Bitmap)e.Frame.Clone();
+
+            lock (frameLock)
+            {
+                // the view may have been frozen while this frame was being
+                // cloned, and it is meant to hold on the frame that was on
+                // screen at that point
+                if (frozen)
+                {
+                    newFrame.Dispose();
+                    return;
+                }
+
+                SetFrame(newFrame);
+            }
 
             // Invalidate is not safe to call from the capture thread, and
             // BeginInvoke does not block it the way Invoke would.

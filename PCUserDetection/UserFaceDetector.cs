@@ -377,17 +377,20 @@ namespace PCUserDetection
 
         private async void btnPrimary_Click(object sender, EventArgs e)
         {
+            // hold the view before taking the copy, so a frame arriving in
+            // between cannot leave the screen showing one frame while another
+            // is the one verified and emailed
+            cameraView.Freeze();
+
             Bitmap frame = cameraView.CaptureFrame();
 
             if (frame == null)
             {
+                cameraView.Resume();
                 SetStatus("There is no camera frame to capture yet.", StatusKind.Neutral);
                 return;
             }
 
-            // hold the view on what was captured until Retake is pressed, so the
-            // result on screen belongs to the frame that is on screen
-            cameraView.Freeze();
             btnSecondary.Enabled = true;
 
             using (frame)
