@@ -81,7 +81,14 @@ namespace PCUserDetection
         /// <summary>
         /// The password in the clear. Reading it decrypts the stored blob and
         /// writing it encrypts what is given; the plain text is never persisted.
+        /// A blob that cannot be decrypted here reads as no password rather than
+        /// throwing: it belongs to another user or another machine, and the way
+        /// out of that is to type the password again.
         /// </summary>
+        /// <exception cref="CryptographicException">
+        /// From the setter, when Windows will not encrypt what it was given. See
+        /// <see cref="Protect"/> for why that is not quietly swallowed.
+        /// </exception>
         [JsonIgnore]
         public string Password
         {
@@ -125,30 +132,93 @@ namespace PCUserDetection
             return null;
         }
 
-        public static EmailSettings Load()
+        /// <summary>Reads the saved settings back off disk.</summary>
+        /// <param name="problem">
+        /// Null when what comes back is what is on disk, which includes there
+        /// being no file yet: a fresh install has nothing to lose and the
+        /// defaults are the truth. Otherwise a line written for a person to
+        /// read, saying the file is there but could not be read. The defaults
+        /// returned alongside it are then a guess rather than anybody's choice,
+        /// and the caller has to say so rather than present them as settings.
+        /// </param>
+        public static EmailSettings Load(out string problem)
         {
+            problem = null;
+
+            string path = AppPaths.EmailSetting;
+
             try
             {
-                string path = AppPaths.EmailSetting;
+                if (!File.Exists(path)) return new EmailSettings();
 
-                if (File.Exists(path))
-                {
-                    var loaded = JsonSerializer.Deserialize<EmailSettings>(File.ReadAllText(path), Options);
-                    if (loaded != null) return loaded;
-                }
+                var loaded = JsonSerializer.Deserialize<EmailSettings>(File.ReadAllText(path), Options);
+                if (loaded != null) return loaded;
+
+                // "null" is valid JSON and deserialises to nothing at all, which
+                // is no more a usable set of settings than a truncated file is
+                problem = "The saved settings in " + path + " are empty.";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // an unreadable or hand-edited settings file should leave the app
-                // working with alerts off, not stop it from starting
+                // working rather than stop it from starting, but it is not the
+                // same thing as having turned alerts off and must not read as it
+                Console.WriteLine(ex);
+                problem = "The saved settings in " + path + " could not be read. " + ex.Message;
             }
 
             return new EmailSettings();
         }
 
+        /// <summary>Writes the settings to disk, all of them or none of them.</summary>
+        /// <remarks>
+        /// The file is written beside the real one and then moved over it, which
+        /// the file system does in a single step. Writing over the file in place
+        /// would leave a half-written one behind if the machine went down during
+        /// the write, and a half-written file does not parse: the next start
+        /// would come up with alerts off and the password gone, having said
+        /// nothing about it. Losing the change being saved is recoverable;
+        /// quietly losing the settings that were already working is not.
+        /// </remarks>
         public void Save()
         {
-            File.WriteAllText(AppPaths.EmailSetting, JsonSerializer.Serialize(this, Options));
+            string path = AppPaths.EmailSetting;
+            string temporary = path + ".tmp";
+
+            try
+            {
+                using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    JsonSerializer.Serialize(stream, this, Options);
+
+                    // the move only carries across what has actually reached the
+                    // disk, so the bytes are pushed out of the cache before it
+                    stream.Flush(true);
+                }
+
+                if (File.Exists(path)) File.Replace(temporary, path, null);
+                else File.Move(temporary, path);
+            }
+            catch (Exception)
+            {
+                Discard(temporary);
+                throw;
+            }
+        }
+
+        /// <summary>Clears away a temporary file that never made it into place.</summary>
+        private static void Discard(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                // the failure that brought us here is the one worth reporting,
+                // and a stray .tmp is written over by the next save anyway
+                Console.WriteLine(ex);
+            }
         }
 
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
@@ -157,21 +227,22 @@ namespace PCUserDetection
             Converters = { new JsonStringEnumConverter() }
         };
 
+        /// <summary>Encrypts a password for storage, or fails loudly trying.</summary>
+        /// <remarks>
+        /// There is no fall back here, in either direction. Writing the password
+        /// out in the clear is worse than an alert that cannot be sent, and
+        /// storing nothing while reporting success is worse still: the password
+        /// is just as lost, and the first anybody hears of it is an alert that
+        /// does not arrive. So the failure is left to reach the caller, which
+        /// can say a password was not saved before anyone relies on it.
+        /// </remarks>
+        /// <exception cref="CryptographicException">Windows would not encrypt it.</exception>
         private static string Protect(string plainText)
         {
             if (string.IsNullOrEmpty(plainText)) return string.Empty;
 
-            try
-            {
-                return Convert.ToBase64String(ProtectedData.Protect(
-                    Encoding.UTF8.GetBytes(plainText), null, DataProtectionScope.CurrentUser));
-            }
-            catch (CryptographicException)
-            {
-                // refusing to fall back to plain text: an alert that cannot be
-                // sent is a smaller problem than a password on disk in the clear
-                return string.Empty;
-            }
+            return Convert.ToBase64String(ProtectedData.Protect(
+                Encoding.UTF8.GetBytes(plainText), null, DataProtectionScope.CurrentUser));
         }
 
         private static string Unprotect(string protectedText)

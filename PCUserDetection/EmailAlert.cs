@@ -66,7 +66,13 @@ namespace PCUserDetection
         /// </remarks>
         public static async Task<EmailAlertResult> SendAnonymousAsync(string photoPath, Action sending)
         {
-            EmailSettings settings = EmailSettings.Load();
+            string problem;
+            EmailSettings settings = EmailSettings.Load(out problem);
+
+            // calling an unreadable settings file "disabled" would be the one
+            // wrong answer that says nothing: a stranger was at the machine and
+            // nobody would ever be told the alert did not go out
+            if (problem != null) return new EmailAlertResult(EmailAlertOutcome.Failed, problem);
 
             if (!settings.Enabled) return new EmailAlertResult(EmailAlertOutcome.Disabled, string.Empty);
 

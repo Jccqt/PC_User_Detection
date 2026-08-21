@@ -110,7 +110,8 @@ namespace PCUserDetection
         /// </summary>
         public void Reload()
         {
-            settings = EmailSettings.Load();
+            string problem;
+            settings = EmailSettings.Load(out problem);
 
             enabled.Value = settings.Enabled;
             attachPhoto.Value = settings.AttachPhoto;
@@ -126,7 +127,19 @@ namespace PCUserDetection
             password.Text = string.IsNullOrEmpty(settings.ProtectedPassword) ? string.Empty : PasswordPlaceholder;
 
             ShowDeliveryFields();
-            SetStatus(settings.Enabled ? DescribeState() : "Alerts are off.", Tone.Muted);
+
+            if (problem != null)
+            {
+                // the fields above are the defaults rather than anything that was
+                // saved, and "Alerts are off." over a file that could not be read
+                // would report a choice nobody made
+                SetStatus(problem + " The screen is showing the defaults instead; saving replaces the file with them.",
+                    Tone.Bad);
+            }
+            else
+            {
+                SetStatus(settings.Enabled ? DescribeState() : "Alerts are off.", Tone.Muted);
+            }
         }
 
         /// <summary>Re-reads the palette. Called by the window after the theme changes.</summary>
@@ -395,9 +408,11 @@ namespace PCUserDetection
 
         /// <summary>
         /// Reads the screen into settings, without saving them. Returns false,
-        /// having said why on the status line, when a number on screen cannot be
-        /// used: what was typed is left alone to be corrected rather than being
-        /// quietly swapped back for the value it was replacing.
+        /// having said why on the status line, when something on screen cannot
+        /// be used: a number that will not parse, or a password Windows will not
+        /// encrypt. What was typed is left alone to be corrected rather than
+        /// being quietly swapped back for the value it was replacing, or worse,
+        /// dropped on the way to the file.
         /// </summary>
         private bool TryCollect(out EmailSettings collected)
         {
@@ -442,7 +457,28 @@ namespace PCUserDetection
                 ProtectedPassword = settings.ProtectedPassword
             };
 
-            if (password.Text != PasswordPlaceholder) collected.Password = password.Text;
+            if (password.Text != PasswordPlaceholder)
+            {
+                try
+                {
+                    collected.Password = password.Text;
+                }
+                catch (Exception ex)
+                {
+                    // Windows would not encrypt it, and keeping it in the clear
+                    // is not on offer. Going ahead would save a set of settings
+                    // with no password in them while the box on screen still
+                    // showed one, so nothing is saved and the person is told.
+                    Console.WriteLine(ex);
+                    SetStatus("The password could not be encrypted, so nothing was saved. " + ex.Message,
+                        Tone.Bad);
+                    password.Focus();
+                    password.SelectAll();
+
+                    collected = null;
+                    return false;
+                }
+            }
 
             return true;
         }
