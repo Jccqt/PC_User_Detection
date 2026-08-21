@@ -80,8 +80,10 @@ namespace PCUserDetection
         }
 
         /// <summary>
-        /// What the row in force stands for. Setting it to something no row
-        /// carries leaves the list where it was.
+        /// What the row in force stands for, or null when there is none. Setting
+        /// it to something no row carries leaves the list where it was, which is
+        /// nowhere at all until something has been put in force. Callers that
+        /// would rather have a value than a null have <see cref="ValueOr{T}"/>.
         /// </summary>
         public object Value
         {
@@ -91,6 +93,28 @@ namespace PCUserDetection
                 int index = values.FindIndex(candidate => Equals(candidate, value));
                 if (index >= 0) combo.SelectedIndex = index;
             }
+        }
+
+        /// <summary>
+        /// What the row in force stands for, as a <typeparamref name="T"/>, with
+        /// <paramref name="fallback"/> standing in when no row is in force, or
+        /// when the one that is carries something else.
+        /// </summary>
+        /// <remarks>
+        /// Casting <see cref="Value"/> straight to the type the rows were filled
+        /// in with reads as safe and is not: a saved setting the list has no row
+        /// for leaves nothing in force, and the cast then throws on the null it
+        /// gets back. It throws wherever the list happens to be read, which is a
+        /// constructor or a paint as often as it is a button, and neither of
+        /// those has anywhere to report it. So a list showing something other
+        /// than what was asked for reads back as a value rather than as an
+        /// exception: the wrong row is a smaller wrong than a window that will
+        /// not open.
+        /// </remarks>
+        public T ValueOr<T>(T fallback)
+        {
+            object value = Value;
+            return value is T ? (T)value : fallback;
         }
 
         /// <summary>Adds a row, and what choosing it means.</summary>

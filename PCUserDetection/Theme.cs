@@ -229,7 +229,16 @@ namespace PCUserDetection
                 if (File.Exists(path))
                 {
                     ThemeMode saved;
-                    if (Enum.TryParse(File.ReadAllText(path).Trim(), true, out saved)) return saved;
+
+                    // TryParse takes a bare number as readily as a name and does
+                    // not check it, so a hand-edited file can hand back a mode
+                    // the app has no palette and no row in the Appearance list
+                    // for; that is the file being unreadable, not a choice
+                    if (Enum.TryParse(File.ReadAllText(path).Trim(), true, out saved) &&
+                        Enum.IsDefined(typeof(ThemeMode), saved))
+                    {
+                        return saved;
+                    }
                 }
             }
             catch (Exception)

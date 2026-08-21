@@ -152,11 +152,21 @@ namespace PCUserDetection
                 if (!File.Exists(path)) return new EmailSettings();
 
                 var loaded = JsonSerializer.Deserialize<EmailSettings>(File.ReadAllText(path), Options);
-                if (loaded != null) return loaded;
 
-                // "null" is valid JSON and deserialises to nothing at all, which
-                // is no more a usable set of settings than a truncated file is
-                problem = "The saved settings in " + path + " are empty.";
+                if (loaded == null)
+                {
+                    // "null" is valid JSON and deserialises to nothing at all, which
+                    // is no more a usable set of settings than a truncated file is
+                    problem = "The saved settings in " + path + " are empty.";
+                }
+                else
+                {
+                    string unknown = loaded.DescribeUnknownChoices();
+
+                    if (unknown == null) return loaded;
+
+                    problem = "The saved settings in " + path + " could not be read. " + unknown;
+                }
             }
             catch (Exception ex)
             {
@@ -168,6 +178,38 @@ namespace PCUserDetection
             }
 
             return new EmailSettings();
+        }
+
+        /// <summary>
+        /// Says which of the choices read off disk is not one the app has, or
+        /// returns null when they all are. Written for a person to read, since
+        /// it ends up on the settings screen.
+        /// </summary>
+        /// <remarks>
+        /// The converter takes either a name it knows or a bare number, and it
+        /// checks only the name: "Delivery": "Post" is refused, while
+        /// "Delivery": 7 comes back as an EmailDelivery 7 that no part of the
+        /// app has a meaning for. It then reads as SMTP at one switch and as
+        /// neither delivery at the next, and the drop-down that has a row for
+        /// each of the two real ones has none to show for it and shows nothing
+        /// at all. Refusing the file here makes the two ways of writing down a
+        /// choice that does not exist fail the same way, which is the way a
+        /// hand-edited file is meant to fail: the defaults on screen, and a line
+        /// saying the file could not be read.
+        /// </remarks>
+        private string DescribeUnknownChoices()
+        {
+            if (!Enum.IsDefined(typeof(EmailDelivery), Delivery))
+            {
+                return "Delivery is " + (int)Delivery + ", which is not a way of sending the app has.";
+            }
+
+            if (!Enum.IsDefined(typeof(EmailSecurity), Security))
+            {
+                return "Security is " + (int)Security + ", which is not a setting the app has.";
+            }
+
+            return null;
         }
 
         /// <summary>Writes the settings to disk, all of them or none of them.</summary>

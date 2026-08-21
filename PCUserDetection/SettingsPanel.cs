@@ -160,6 +160,25 @@ namespace PCUserDetection
             }
         }
 
+        /// <summary>
+        /// What the Send using list is showing. A settings file naming a delivery
+        /// the app does not have is turned away by <see cref="EmailSettings.Load"/>
+        /// before it reaches the list, so the fallback here is for a delivery
+        /// added to the enum without a row being added alongside it: the list
+        /// then reads as the one it was built to show first rather than throwing
+        /// in a constructor, where there is no screen yet to say so on.
+        /// </summary>
+        private EmailDelivery SelectedDelivery
+        {
+            get { return delivery.ValueOr(EmailDelivery.Smtp); }
+        }
+
+        /// <summary>What the Security list is showing. See <see cref="SelectedDelivery"/>.</summary>
+        private EmailSecurity SelectedSecurity
+        {
+            get { return security.ValueOr(EmailSecurity.StartTls); }
+        }
+
         /// <summary>Re-reads the palette. Called by the window after the theme changes.</summary>
         public void ApplyTheme()
         {
@@ -563,7 +582,7 @@ namespace PCUserDetection
             // reached to be corrected would be a dead end
             int portNumber = settings.Port;
 
-            if ((EmailDelivery)delivery.Value == EmailDelivery.Smtp &&
+            if (SelectedDelivery == EmailDelivery.Smtp &&
                 !TryReadNumber(port, 1, 65535,
                     "The port has to be a whole number between 1 and 65535.", out portNumber))
             {
@@ -574,8 +593,8 @@ namespace PCUserDetection
             {
                 Enabled = enabled.Checked,
                 AttachPhoto = attachPhoto.Checked,
-                Delivery = (EmailDelivery)delivery.Value,
-                Security = (EmailSecurity)security.Value,
+                Delivery = SelectedDelivery,
+                Security = SelectedSecurity,
                 CooldownMinutes = cooldownMinutes,
                 From = from.Text.Trim(),
                 To = to.Text.Trim(),
@@ -660,7 +679,7 @@ namespace PCUserDetection
 
         private void ShowDeliveryFields()
         {
-            bool smtp = (EmailDelivery)delivery.Value == EmailDelivery.Smtp;
+            bool smtp = SelectedDelivery == EmailDelivery.Smtp;
 
             host.Enabled = smtp;
             port.Enabled = smtp;
