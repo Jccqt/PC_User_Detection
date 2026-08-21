@@ -43,6 +43,12 @@ namespace PCUserDetection
         public UserFaceDetector()
         {
             InitializeComponent();
+
+            // The designer file does not carry the icon, so the window is given
+            // it here. The title bar, the taskbar button and the Alt+Tab entry
+            // all follow from this one assignment.
+            Icon = AppIcon.Value;
+
             BuildNavigation();
             BuildThemeButtons();
             ApplyTheme();

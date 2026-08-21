@@ -16,6 +16,10 @@
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <!-- Targets .NET 8, but runs on any newer major runtime that is installed. -->
     <RollForward>LatestMajor</RollForward>
+    <!-- The icon the shell shows for the file: in Explorer, on a shortcut, and
+         on the taskbar before the window is up. What the window itself wears is
+         set separately; see AppIcon. -->
+    <ApplicationIcon>Assets\PCUserDetection.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,6 +29,16 @@
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ApplicationIcon above hands the icon to the shell, which is not
+         somewhere the running app can read it back from at every size it
+         needs. Embedding the same file lets the window load it as a stream, so
+         the title bar and the taskbar each pick the size drawn for them
+         instead of a stretched copy of one. -->
+    <EmbeddedResource Include="Assets\PCUserDetection.ico"
+                      LogicalName="PCUserDetection.Assets.PCUserDetection.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
