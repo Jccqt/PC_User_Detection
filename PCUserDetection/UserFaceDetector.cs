@@ -22,6 +22,12 @@ namespace PCUserDetection
         private enum StatusKind { Neutral, Good, Bad }
 
         private FilterInfoCollection cameras;
+
+        /// <summary>True when the camera list could not be read at all, as opposed to being empty.</summary>
+        private bool cameraListFailed;
+
+        /// <summary>The detail behind that failure, until it has been reported.</summary>
+        private string cameraListError;
         private Screen currentScreen = Screen.Detect;
         private StatusKind statusKind = StatusKind.Neutral;
 
@@ -139,14 +145,29 @@ namespace PCUserDetection
 
         private void UserFaceDetector_Load(object sender, EventArgs e)
         {
-            cameras = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-
-            if (cameras.Count == 0)
+            // A damaged DirectShow registration or a misbehaving virtual-camera
+            // driver throws while the device list is being built. That leaves the
+            // app with no camera to offer, which it already copes with, so it is
+            // reported rather than allowed to take the window down on startup.
+            try
             {
-                cbCamera.Items.Add("No camera found");
+                cameras = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            }
+            catch (Exception ex)
+            {
+                cameras = null;
+                cameraListFailed = true;
+                cameraListError = ex.Message;
+            }
+
+            if (cameraListFailed || cameras.Count == 0)
+            {
+                cbCamera.Items.Add(cameraListFailed ? "Camera unavailable" : "No camera found");
                 cbCamera.SelectedIndex = 0;
                 cbCamera.Enabled = false;
-                cameraView.Placeholder = "No camera was found. Connect one and restart the app.";
+                cameraView.Placeholder = cameraListFailed
+                    ? "The cameras on this PC could not be listed."
+                    : "No camera was found. Connect one and restart the app.";
                 btnPrimary.Enabled = false;
             }
             else
@@ -157,6 +178,25 @@ namespace PCUserDetection
 
             ShowScreen(Screen.Detect);
             RefreshGallery();
+        }
+
+        /// <summary>
+        /// Reports a camera list that could not be read. It waits for Shown rather
+        /// than Load, because during Load the window is not on screen yet and the
+        /// dialog would come up on its own with nothing behind it.
+        /// </summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
+            if (cameraListError == null) return;
+
+            string detail = cameraListError;
+            cameraListError = null; // said once, not again on a later Shown
+
+            MessageBox.Show(this,
+                "The cameras on this PC could not be listed, so the camera is unavailable.\n\n" + detail,
+                "PC User Detection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void UserFaceDetector_FormClosing(object sender, FormClosingEventArgs e)
@@ -473,6 +513,12 @@ namespace PCUserDetection
 
         private void ResetStatus()
         {
+            if (cameraListFailed)
+            {
+                SetStatus("The cameras on this PC could not be listed.", StatusKind.Bad);
+                return;
+            }
+
             if (cameras != null && cameras.Count == 0)
             {
                 SetStatus("No camera was found.", StatusKind.Bad);
