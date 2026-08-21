@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -116,48 +117,65 @@ namespace PCUserDetection
         // Segoe UI ships with Windows, so it always renders as intended.
         private const string Family = "Segoe UI";
 
-        public static readonly Font Brand = new Font(Family, 12.5F, FontStyle.Bold);
-        public static readonly Font Heading = new Font(Family, 14F, FontStyle.Bold);
-        public static readonly Font Body = new Font(Family, 9.75F);
-        public static readonly Font Small = new Font(Family, 8.5F);
-        public static readonly Font Nav = new Font(Family, 10F);
-        public static readonly Font Status = new Font(Family, 10.5F, FontStyle.Bold);
+        /// <summary>
+        /// The heavier weight is a family of its own on Windows rather than a
+        /// style of Segoe UI, so it has to be asked for by name. It stands in
+        /// everywhere the chrome would otherwise reach for bold, which is a
+        /// step heavier than this window wants.
+        /// </summary>
+        private const string SemiboldFamily = "Segoe UI Semibold";
 
-        /// <summary>A filled, accent coloured button for the main action on a screen.</summary>
-        public static void StylePrimary(Button button)
+        /// <summary>The app name at the top of the rail.</summary>
+        public static readonly Font Brand = new Font(SemiboldFamily, 10F);
+
+        /// <summary>The screen title at the top of the content area.</summary>
+        public static readonly Font Heading = new Font(SemiboldFamily, 14F);
+
+        /// <summary>A section heading on the settings form, and primary button text.</summary>
+        public static readonly Font Section = new Font(SemiboldFamily, 9.5F);
+
+        /// <summary>The word a status line opens with, ahead of its detail.</summary>
+        public static readonly Font Status = new Font(SemiboldFamily, 9.75F);
+
+        /// <summary>Body text: row labels, sentence-long hints, status detail.</summary>
+        public static readonly Font Body = new Font(Family, 9.75F);
+
+        /// <summary>The text inside a field, a combo or a button.</summary>
+        public static readonly Font Control = new Font(Family, 9.5F);
+
+        /// <summary>Captions, counts and the shorter hints.</summary>
+        public static readonly Font Small = new Font(Family, 8.5F);
+
+        /// <summary>The rows of the navigation rail.</summary>
+        public static readonly Font Nav = new Font(Family, 10F);
+
+        /// <summary>
+        /// Filenames and folder paths. They are read character by character
+        /// rather than as words, which is what a fixed pitch is for.
+        /// </summary>
+        public static readonly Font Mono = new Font("Consolas", 9F);
+
+        /// <summary>
+        /// A filled, accent coloured button for the main action on a screen.
+        /// Accent is spent on this and on the rail's selection bar, and on
+        /// nothing else in the window.
+        /// </summary>
+        /// <remarks>
+        /// The button paints itself from the palette in force, so this only has
+        /// to say which of the two treatments it wears; a theme change is a
+        /// repaint rather than another call to this.
+        /// </remarks>
+        public static void StylePrimary(FlatButton button)
         {
-            StyleButton(button);
-            button.BackColor = Accent;
-            button.ForeColor = OnAccent;
-            button.FlatAppearance.MouseOverBackColor = AccentHover;
-            button.FlatAppearance.MouseDownBackColor = Accent;
+            button.Kind = ButtonKind.Primary;
+            button.Invalidate();
         }
 
         /// <summary>An outlined button for secondary actions next to a primary one.</summary>
-        public static void StyleGhost(Button button)
+        public static void StyleGhost(FlatButton button)
         {
-            StyleButton(button);
-            button.BackColor = Surface;
-            button.ForeColor = Text;
-            button.FlatAppearance.BorderSize = 1;
-            button.FlatAppearance.BorderColor = Border;
-            button.FlatAppearance.MouseOverBackColor = SurfaceHover;
-            button.FlatAppearance.MouseDownBackColor = Surface;
-        }
-
-        /// <summary>
-        /// A small button in a strip of choices, one of which is in force. Used
-        /// by the Appearance switch in the rail and by every choice on the
-        /// settings screen, so they all mark the chosen one the same way.
-        /// </summary>
-        public static void StyleChoice(Button button, bool selected)
-        {
-            button.BackColor = selected ? Accent : Surface;
-            button.ForeColor = selected ? OnAccent : TextMuted;
-            button.FlatAppearance.BorderSize = selected ? 0 : 1;
-            button.FlatAppearance.BorderColor = Border;
-            button.FlatAppearance.MouseOverBackColor = selected ? AccentHover : SurfaceHover;
-            button.FlatAppearance.MouseDownBackColor = button.BackColor;
+            button.Kind = ButtonKind.Ghost;
+            button.Invalidate();
         }
 
         /// <summary>
@@ -238,15 +256,50 @@ namespace PCUserDetection
 
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr handle, int attribute, ref int value, int size);
+    }
 
-        private static void StyleButton(Button button)
+    /// <summary>
+    /// The rounded rectangle every control in the window is drawn as. A button
+    /// and a text box cannot round themselves, so each one is painted over with
+    /// this instead.
+    /// </summary>
+    /// <remarks>
+    /// The radius is 3 pixels on a control and 0 on a surface; nothing in the
+    /// window is rounder than that. Pass the control's own client rectangle
+    /// deflated by 1, so the stroke has a pixel to sit in and is not clipped by
+    /// the edge it is drawn against.
+    /// </remarks>
+    internal static class Rounded
+    {
+        public static GraphicsPath Path(Rectangle bounds, int radius)
         {
-            button.FlatStyle = FlatStyle.Flat;
-            button.FlatAppearance.BorderSize = 0;
-            button.Font = Body;
-            button.Height = 40;
-            button.Cursor = Cursors.Hand;
-            button.UseVisualStyleBackColor = false;
+            int d = radius * 2;
+            var path = new GraphicsPath();
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d - 1, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d - 1, bounds.Bottom - d - 1, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d - 1, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        /// <summary>
+        /// Fills the rectangle, and outlines it when a border colour is given.
+        /// A null border is a fill with nothing drawn around it.
+        /// </summary>
+        public static void Fill(Graphics g, Rectangle bounds, int radius, Color fill, Color? border)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            using (GraphicsPath path = Path(bounds, radius))
+            using (var brush = new SolidBrush(fill))
+            {
+                g.FillPath(brush, path);
+
+                if (border == null) return;
+
+                using (var pen = new Pen(border.Value)) g.DrawPath(pen, path);
+            }
         }
     }
 }

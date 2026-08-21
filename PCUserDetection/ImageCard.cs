@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
@@ -7,26 +8,42 @@ using System.Windows.Forms;
 namespace PCUserDetection
 {
     /// <summary>
-    /// One registered image in the gallery: a thumbnail, the name of the file it
-    /// came from, and a Remove button. Deleting is left to the owning screen,
-    /// which raises the confirmation and reloads the gallery.
+    /// One registered image in the gallery: a thumbnail, when it was taken, and
+    /// a × to remove it. Deleting is left to the owning screen, which raises the
+    /// confirmation and reloads the gallery.
     /// </summary>
     internal class ImageCard : Panel
     {
-        private const int CardWidth = 210;
-        private const int CardHeight = 176;
-        private const int FooterHeight = 34;
+        private const int CardWidth = 170;
+        private const int ThumbnailHeight = 111;
+        private const int FooterHeight = 32;
+        private const int Radius = 3;
+
+        /// <summary>The one pixel border the card is drawn with, top and bottom.</summary>
+        private const int CardHeight = ThumbnailHeight + FooterHeight + 2;
 
         private readonly PictureBox thumbnail;
+        private readonly Panel footer;
+        private readonly Label taken;
+        private readonly Button remove;
 
         public ImageCard(string filePath)
         {
             FilePath = filePath;
 
             Size = new Size(CardWidth, CardHeight);
-            Margin = new Padding(0, 0, 16, 16);
+            Margin = new Padding(0, 0, 12, 12);
             BackColor = Theme.Surface;
             Padding = new Padding(1);
+
+            // The card has 3 pixel corners and its children are square, so the
+            // whole card is clipped to the shape its border is drawn in. The
+            // rectangle is a pixel wider and taller than the card, because the
+            // path is measured for a stroke and this is measured for a fill.
+            using (GraphicsPath shape = Rounded.Path(new Rectangle(0, 0, CardWidth + 1, CardHeight + 1), Radius))
+            {
+                Region = new Region(shape);
+            }
 
             thumbnail = new PictureBox
             {
@@ -52,47 +69,57 @@ namespace PCUserDetection
                 });
             }
 
-            var name = new Label
+            taken = new Label
             {
                 Dock = DockStyle.Fill,
-                Font = Theme.Small,
-                ForeColor = Theme.TextMuted,
+                Font = ParsesAsACapture(filePath) ? Theme.Small : Theme.Mono,
+                ForeColor = ParsesAsACapture(filePath) ? Theme.Text : Theme.TextMuted,
                 Text = DescribeCapture(filePath),
                 TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(8, 0, 0, 0),
                 AutoEllipsis = true
             };
 
-            var remove = new Button
+            remove = new Button
             {
                 Dock = DockStyle.Right,
-                Width = 64,
-                Text = "Remove",
-                Font = Theme.Small,
+                Width = 20,
+                Text = "✕",
+                Font = Theme.Control,
                 ForeColor = Theme.TextMuted,
                 BackColor = Theme.Surface,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand,
-                UseVisualStyleBackColor = false
+                UseVisualStyleBackColor = false,
+                TabStop = false
             };
             remove.FlatAppearance.BorderSize = 0;
             remove.FlatAppearance.MouseOverBackColor = Theme.SurfaceHover;
-            remove.MouseEnter += (s, e) => remove.ForeColor = Theme.Danger;
-            remove.MouseLeave += (s, e) => remove.ForeColor = Theme.TextMuted;
+            remove.FlatAppearance.MouseDownBackColor = Theme.SurfaceHover;
             remove.Click += (s, e) =>
             {
                 var handler = DeleteRequested;
                 if (handler != null) handler(this, EventArgs.Empty);
             };
 
-            var footer = new Panel
+            footer = new Panel
             {
                 Dock = DockStyle.Bottom,
                 Height = FooterHeight,
-                BackColor = Theme.Surface
+                BackColor = Theme.Surface,
+                Padding = new Padding(10, 0, 5, 0)
             };
-            footer.Controls.Add(name);
+            footer.Paint += Footer_Paint;
+            footer.Controls.Add(taken);
             footer.Controls.Add(remove);
+
+            // a child swallows the mouse events of the panel under it, so every
+            // part of the footer has to be asked where the pointer really is
+            footer.MouseEnter += Hover_Changed;
+            footer.MouseLeave += Hover_Changed;
+            taken.MouseEnter += Hover_Changed;
+            taken.MouseLeave += Hover_Changed;
+            remove.MouseEnter += Hover_Changed;
+            remove.MouseLeave += Hover_Changed;
 
             Controls.Add(thumbnail);
             Controls.Add(footer);
@@ -101,8 +128,31 @@ namespace PCUserDetection
         /// <summary>The registered image this card was built from.</summary>
         public string FilePath { get; private set; }
 
-        /// <summary>Raised when Remove is clicked. The card does not delete anything itself.</summary>
+        /// <summary>Raised when × is clicked. The card does not delete anything itself.</summary>
         public event EventHandler DeleteRequested;
+
+        /// <summary>
+        /// Lights the footer while the pointer is anywhere over it, and turns
+        /// the × the colour of what it does.
+        /// </summary>
+        private void Hover_Changed(object sender, EventArgs e)
+        {
+            bool over = footer.ClientRectangle.Contains(footer.PointToClient(Cursor.Position));
+
+            footer.BackColor = over ? Theme.SurfaceHover : Theme.Surface;
+            remove.BackColor = footer.BackColor;
+            remove.ForeColor = over ? Theme.Danger : Theme.TextMuted;
+            taken.BackColor = footer.BackColor;
+        }
+
+        /// <summary>Separates the footer from the thumbnail above it.</summary>
+        private void Footer_Paint(object sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Theme.Border))
+            {
+                e.Graphics.DrawLine(pen, 0, 0, footer.Width, 0);
+            }
+        }
 
         /// <summary>Turns Image_20250726_140742 into a date a person can read.</summary>
         private static string DescribeCapture(string filePath)
@@ -110,13 +160,27 @@ namespace PCUserDetection
             string name = Path.GetFileNameWithoutExtension(filePath);
             DateTime taken;
 
-            if (name.StartsWith("Image_") && DateTime.TryParseExact(name.Substring(6), "yyyyMMdd_HHmmss",
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out taken))
-            {
-                return taken.ToString("d MMM yyyy, HH:mm");
-            }
+            if (TryReadCapture(name, out taken)) return taken.ToString("d MMM, HH:mm");
 
             return name;
+        }
+
+        /// <summary>
+        /// True when the filename carries the moment the photo was taken. A name
+        /// that does not is shown as it is, in the face filenames are set in.
+        /// </summary>
+        private static bool ParsesAsACapture(string filePath)
+        {
+            DateTime taken;
+            return TryReadCapture(Path.GetFileNameWithoutExtension(filePath), out taken);
+        }
+
+        private static bool TryReadCapture(string name, out DateTime taken)
+        {
+            taken = DateTime.MinValue;
+
+            return name.StartsWith("Image_") && DateTime.TryParseExact(name.Substring(6), "yyyyMMdd_HHmmss",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out taken);
         }
 
         /// <summary>
@@ -143,9 +207,16 @@ namespace PCUserDetection
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
+
+            Rectangle bounds = ClientRectangle;
+            bounds.Width -= 1;
+            bounds.Height -= 1;
+
+            using (GraphicsPath shape = Rounded.Path(bounds, Radius))
             using (var pen = new Pen(Theme.Border))
             {
-                e.Graphics.DrawRectangle(pen, 0, 0, Width - 1, Height - 1);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.DrawPath(pen, shape);
             }
         }
 

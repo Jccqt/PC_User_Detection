@@ -1,5 +1,6 @@
 using AForge.Video.DirectShow;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -38,7 +39,21 @@ namespace PCUserDetection
         /// <summary>True between starting the camera and its first frame arriving.</summary>
         private bool cameraStarting;
         private Screen currentScreen = Screen.Detect;
-        private StatusKind statusKind = StatusKind.Neutral;
+
+        /// <summary>
+        /// How many registered images the gallery last found, or null when they
+        /// could not be listed. The rail draws it on the Images row and the
+        /// folder line under the gallery repeats it, so it is held here rather
+        /// than written into either of them.
+        /// </summary>
+        private int? imageCount;
+
+        /// <summary>
+        /// Where the registered images are kept, read once. Asking AppPaths for
+        /// it creates the folder if it has gone missing, which is not something
+        /// a paint handler should be doing on every repaint.
+        /// </summary>
+        private static readonly string ImageFolder = AppPaths.CapturedImages;
 
         public UserFaceDetector()
         {
@@ -50,7 +65,7 @@ namespace PCUserDetection
             Icon = AppIcon.Value;
 
             BuildNavigation();
-            BuildThemeButtons();
+            BuildAppearanceChoices();
             ApplyTheme();
         }
 
@@ -74,17 +89,14 @@ namespace PCUserDetection
             pnlNav.BackColor = Theme.Surface;
             pnlMain.BackColor = Theme.Background;
 
-            lblBrand.ForeColor = Theme.Text;
             lblAppearance.ForeColor = Theme.TextMuted;
-            lblCount.ForeColor = Theme.TextMuted;
+            lblCamera.ForeColor = Theme.TextMuted;
             lblScreenTitle.ForeColor = Theme.Text;
             lblScreenHint.ForeColor = Theme.TextMuted;
-            lblStatus.ForeColor = StatusColor();
+            lnkOpenFolder.ForeColor = Theme.Accent;
 
-            pnlCameraFrame.BackColor = Theme.Surface;
-            pnlCameraClip.BackColor = Theme.Surface;
-            cbCamera.BackColor = Theme.Surface;
-            cbCamera.ForeColor = Theme.Text;
+            cboCamera.ApplyTheme();
+            cboAppearance.ApplyTheme();
 
             cameraView.BackColor = Theme.Canvas;
             pnlSettings.ApplyTheme();
@@ -92,36 +104,34 @@ namespace PCUserDetection
             Theme.StylePrimary(btnPrimary);
             Theme.StyleGhost(btnSecondary);
 
-            foreach (Control button in flpNav.Controls) StyleNavButton((Button)button);
-            foreach (Control button in flpModes.Controls) StyleModeButton((Button)button);
+            // the rail rows read the palette while painting, so marking the one
+            // in force again is all they need
+            MarkSelectedScreen();
 
             if (IsHandleCreated) Theme.ApplyTitleBar(Handle);
 
             Invalidate(true);
         }
 
-        private void BuildThemeButtons()
+        /// <summary>
+        /// Fills the Appearance list at the foot of the rail. Auto is spelled
+        /// out as what it does, since a list has the room a button did not.
+        /// </summary>
+        private void BuildAppearanceChoices()
         {
-            flpModes.Controls.Add(CreateModeButton("Light", ThemeMode.Light));
-            flpModes.Controls.Add(CreateModeButton("Dark", ThemeMode.Dark));
-            flpModes.Controls.Add(CreateModeButton("Auto", ThemeMode.System));
+            cboAppearance.Add("Light", ThemeMode.Light)
+                         .Add("Dark", ThemeMode.Dark)
+                         .Add("Follow Windows", ThemeMode.System);
+
+            // the mode in force is not a choice somebody just made, so it is put
+            // in place without the handler that would re-apply the whole palette
+            cboAppearance.SetValueQuietly(Theme.Mode);
+            cboAppearance.ValueChanged += cboAppearance_ValueChanged;
         }
 
-        private Button CreateModeButton(string text, ThemeMode mode)
+        private void cboAppearance_ValueChanged(object sender, EventArgs e)
         {
-            var button = new Button
-            {
-                Text = text,
-                Tag = mode,
-                Size = new Size(54, 30),
-                Margin = new Padding(0, 0, 4, 0),
-                Font = Theme.Small,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand,
-                UseVisualStyleBackColor = false
-            };
-            button.Click += (s, e) => SwitchTheme(mode);
-            return button;
+            SwitchTheme((ThemeMode)cboAppearance.Value);
         }
 
         private void SwitchTheme(ThemeMode mode)
@@ -133,21 +143,14 @@ namespace PCUserDetection
             RefreshGallery();
         }
 
-        /// <summary>Marks the mode in force. Auto tracks whatever Windows is set to.</summary>
-        private void StyleModeButton(Button button)
+        /// <summary>Marks the row for the screen on show, and unmarks the rest.</summary>
+        private void MarkSelectedScreen()
         {
-            Theme.StyleChoice(button, (ThemeMode)button.Tag == Theme.Mode);
-        }
-
-        private void StyleNavButton(Button button)
-        {
-            bool selected = (Screen)button.Tag == currentScreen;
-
-            button.BackColor = selected ? Theme.SurfaceHover : Theme.Surface;
-            button.ForeColor = selected ? Theme.Text : Theme.TextMuted;
-            button.FlatAppearance.MouseOverBackColor = Theme.SurfaceHover;
-            button.FlatAppearance.MouseDownBackColor = Theme.SurfaceHover;
-            button.Invalidate();
+            foreach (RailButton row in flpNav.Controls)
+            {
+                row.Selected = (Screen)row.Tag == currentScreen;
+                row.Invalidate();
+            }
         }
 
         #endregion
@@ -177,9 +180,10 @@ namespace PCUserDetection
 
             if (cameraListFailed || cameras.Count == 0)
             {
-                cbCamera.Items.Add(cameraListFailed ? "Camera unavailable" : "No camera found");
-                cbCamera.SelectedIndex = 0;
-                cbCamera.Enabled = false;
+                string only = cameraListFailed ? "Camera unavailable" : "No camera found";
+                cboCamera.Add(only, only);
+                cboCamera.SelectedIndex = 0;
+                cboCamera.Enabled = false;
                 cameraView.Placeholder = cameraListFailed
                     ? "The cameras on this PC could not be listed."
                     : "No camera was found. Connect one and restart the app.";
@@ -187,8 +191,8 @@ namespace PCUserDetection
             }
             else
             {
-                foreach (FilterInfo camera in cameras) cbCamera.Items.Add(camera.Name);
-                cbCamera.SelectedIndex = 0; // starts the feed through SelectedIndexChanged
+                foreach (FilterInfo camera in cameras) cboCamera.Add(camera.Name, camera.MonikerString);
+                cboCamera.SelectedIndex = 0; // starts the feed through ValueChanged
             }
 
             ShowScreen(Screen.Detect);
@@ -229,27 +233,13 @@ namespace PCUserDetection
             flpNav.Controls.Add(CreateNavButton("Settings", Screen.Settings));
         }
 
-        private Button CreateNavButton(string text, Screen screen)
+        private RailButton CreateNavButton(string text, Screen screen)
         {
-            var button = new Button
-            {
-                Text = text,
-                Tag = screen,
-                Size = new Size(184, 42),
-                Margin = new Padding(0, 0, 0, 4),
-                Font = Theme.Nav,
-                FlatStyle = FlatStyle.Flat,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(18, 0, 0, 0),
-                Cursor = Cursors.Hand,
-                UseVisualStyleBackColor = false
-            };
-            button.FlatAppearance.BorderSize = 0;
-            button.FlatAppearance.MouseOverBackColor = Theme.SurfaceHover;
-            button.FlatAppearance.MouseDownBackColor = Theme.SurfaceHover;
-            button.Paint += NavButton_Paint;
-            button.Click += (s, e) => ShowScreen(screen);
-            return button;
+            // the full width of the rail, less the hairline down its right edge,
+            // so the selection bar can sit against the window edge
+            var row = new RailButton(text, screen) { Size = new Size(207, 36) };
+            row.Click += (s, e) => ShowScreen(screen);
+            return row;
         }
 
         /// <summary>Separates the rail from the content with a hairline down its right edge.</summary>
@@ -261,15 +251,46 @@ namespace PCUserDetection
             }
         }
 
-        /// <summary>Marks the screen the rail is on with an accent bar down its left edge.</summary>
-        private void NavButton_Paint(object sender, PaintEventArgs e)
+        /// <summary>
+        /// Draws the app mark and the name beside it at the top of the rail.
+        /// The wording is drawn rather than left to a label, so that it lines up
+        /// with the rows below it to the pixel.
+        /// </summary>
+        private void pnlBrand_Paint(object sender, PaintEventArgs e)
         {
-            var button = (Button)sender;
-            if ((Screen)button.Tag != currentScreen) return;
+            const int Left = 16;
+            const int MarkSize = 20;
+            const int Gap = 10;
 
-            using (var brush = new SolidBrush(Theme.Accent))
+            Icon icon = AppIcon.Value;
+
+            if (icon != null)
             {
-                e.Graphics.FillRectangle(brush, 0, 8, 3, button.Height - 16);
+                // the .ico carries a 20 pixel drawing of its own, so asking for
+                // that size gets it rather than a shrunken copy of a larger one
+                using (var sized = new Icon(icon, new Size(MarkSize, MarkSize)))
+                using (Bitmap mark = sized.ToBitmap())
+                {
+                    e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    e.Graphics.DrawImage(mark,
+                        new Rectangle(Left, (pnlBrand.Height - MarkSize) / 2, MarkSize, MarkSize));
+                }
+            }
+
+            int x = Left + MarkSize + Gap;
+
+            TextRenderer.DrawText(e.Graphics, "User Detection", Theme.Brand,
+                new Rectangle(x, 0, pnlBrand.Width - x - Left, pnlBrand.Height), Theme.Text,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+        }
+
+        /// <summary>Separates the Appearance block from the rows above it.</summary>
+        private void pnlAppearance_Paint(object sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Theme.Border))
+            {
+                e.Graphics.DrawLine(pen, 0, 0, pnlAppearance.Width, 0);
             }
         }
 
@@ -277,30 +298,39 @@ namespace PCUserDetection
         {
             currentScreen = screen;
 
-            foreach (Control control in flpNav.Controls) StyleNavButton((Button)control);
+            MarkSelectedScreen();
 
             bool usesCamera = screen == Screen.Detect || screen == Screen.AddUser;
-            cameraView.Visible = usesCamera;
+            pnlCameraArea.Visible = usesCamera;
             pnlGallery.Visible = screen == Screen.Images;
             pnlSettings.Visible = screen == Screen.Settings;
             pnlFooter.Visible = usesCamera;
             pnlCameraSlot.Visible = usesCamera && cameras != null && cameras.Count > 0;
+
+            // the camera column is taller than the title and its hint, so the
+            // band it stands in is the taller of the two and the title drops to
+            // sit on the same baseline
+            int top = pnlCameraSlot.Visible ? 24 : 20;
+
+            pnlHeader.Height = pnlCameraSlot.Visible ? 85 : 80;
+            lblScreenTitle.Top = top;
+            lblScreenHint.Top = top + 28;
 
             switch (screen)
             {
                 case Screen.Detect:
                     lblScreenTitle.Text = "Detect";
                     lblScreenHint.Text = "Check whether the person at the PC is a registered user.";
-                    btnPrimary.Text = "Capture";
+                    btnPrimary.Text = "&Capture";
                     break;
                 case Screen.AddUser:
                     lblScreenTitle.Text = "Add user";
                     lblScreenHint.Text = "Save a photo of the person at the PC as a registered user.";
-                    btnPrimary.Text = "Save photo";
+                    btnPrimary.Text = "&Save photo";
                     break;
                 case Screen.Images:
                     lblScreenTitle.Text = "Images";
-                    lblScreenHint.Text = "Every photo the detection is compared against.";
+                    lblScreenHint.Text = "Every photo the detection is compared against. Newest first.";
                     break;
                 case Screen.Settings:
                     lblScreenTitle.Text = "Settings";
@@ -328,7 +358,7 @@ namespace PCUserDetection
 
         #region Camera
 
-        private void cbCamera_SelectedIndexChanged(object sender, EventArgs e)
+        private void cboCamera_ValueChanged(object sender, EventArgs e)
         {
             StartSelectedCamera();
             ResetStatus();
@@ -336,7 +366,7 @@ namespace PCUserDetection
 
         private void StartSelectedCamera()
         {
-            if (cameras == null || cameras.Count == 0 || cbCamera.SelectedIndex < 0) return;
+            if (cameras == null || cameras.Count == 0 || cboCamera.SelectedIndex < 0) return;
 
             // a failure belongs to the attempt that reported it; this is a fresh
             // one, and the screen says so until the camera says otherwise
@@ -345,7 +375,7 @@ namespace PCUserDetection
 
             // Start is a no-op when this device is already the one running, so
             // moving between Detect and Add user does not restart the feed.
-            cameraView.Start(cameras[cbCamera.SelectedIndex].MonikerString);
+            cameraView.Start(cameras[cboCamera.SelectedIndex].MonikerString);
 
             // a feed that is already delivering is ready now; a fresh one has
             // nothing behind Capture until its first frame arrives, and saying
@@ -394,47 +424,14 @@ namespace PCUserDetection
             ResetStatus();
         }
 
-        /// <summary>Draws the border and the chevron the clipped combo box cannot.</summary>
-        private void pnlCameraFrame_Paint(object sender, PaintEventArgs e)
+        /// <summary>Separates the footer from the camera above it.</summary>
+        private void pnlFooter_Paint(object sender, PaintEventArgs e)
         {
-            using (var border = new Pen(Theme.Border))
+            using (var pen = new Pen(Theme.Border))
             {
-                e.Graphics.DrawRectangle(border, 0, 0, pnlCameraFrame.Width - 1, pnlCameraFrame.Height - 1);
+                e.Graphics.DrawLine(pen, pnlFooter.Padding.Left, 0,
+                    pnlFooter.Width - pnlFooter.Padding.Right, 0);
             }
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            int x = pnlCameraFrame.Width - 15;
-            int y = pnlCameraFrame.Height / 2 - 2;
-            var chevron = new[] { new Point(x - 4, y), new Point(x, y + 4), new Point(x + 4, y) };
-
-            using (var pen = new Pen(Theme.TextMuted, 1.6F))
-            {
-                e.Graphics.DrawLines(pen, chevron);
-            }
-        }
-
-        private void pnlCameraFrame_Click(object sender, EventArgs e)
-        {
-            if (cbCamera.Enabled) cbCamera.DroppedDown = true;
-        }
-
-        /// <summary>The combo box is owner drawn so its list matches the theme.</summary>
-        private void cbCamera_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-
-            bool highlighted = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-
-            using (var background = new SolidBrush(highlighted ? Theme.SurfaceHover : Theme.Surface))
-            {
-                e.Graphics.FillRectangle(background, e.Bounds);
-            }
-
-            var text = new Rectangle(e.Bounds.X + 8, e.Bounds.Y, e.Bounds.Width - 12, e.Bounds.Height);
-            TextRenderer.DrawText(e.Graphics, cbCamera.Items[e.Index].ToString(), cbCamera.Font, text,
-                cbCamera.Enabled ? Theme.Text : Theme.TextMuted,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }
 
         #endregion
@@ -547,7 +544,7 @@ namespace PCUserDetection
                 frame.Save(Path.Combine(AppPaths.CapturedImages, filename),
                     System.Drawing.Imaging.ImageFormat.Jpeg);
 
-                SetStatus("Saved as " + filename, StatusKind.Good);
+                SetStatus("Saved.", filename, StatusKind.Good, true);
                 RefreshGallery();
             }
             catch (Exception ex)
@@ -563,23 +560,40 @@ namespace PCUserDetection
 
         #region Status
 
+        /// <summary>
+        /// Puts a whole sentence on the status line, split at the first full
+        /// stop into the state and the detail behind it. Everything that reports
+        /// a status says it as one sentence, so the split happens here rather
+        /// than at each of the places that has something to report.
+        /// </summary>
         private void SetStatus(string text, StatusKind kind)
         {
-            statusKind = kind;
-            lblStatus.Text = text;
-            lblStatus.ForeColor = StatusColor();
-            pnlStatusDot.Invalidate();
+            lblStatus.Set(text, ToneOf(kind));
+            statusTip.SetToolTip(lblStatus, lblStatus.FullText);
         }
 
         /// <summary>
-        /// Resolved on demand rather than stored, so a status already on screen
-        /// takes the new palette when the theme changes.
+        /// Puts a status on the line in its two halves already, for the one
+        /// report whose detail is not a sentence.
         /// </summary>
-        private Color StatusColor()
+        /// <param name="detailIsAPath">
+        /// True when the detail is a filename or a folder, which is set in a
+        /// fixed pitch rather than read as words.
+        /// </param>
+        private void SetStatus(string state, string detail, StatusKind kind, bool detailIsAPath)
         {
-            if (statusKind == StatusKind.Good) return Theme.Success;
-            if (statusKind == StatusKind.Bad) return Theme.Danger;
-            return Theme.TextMuted;
+            lblStatus.Set(state, detail, ToneOf(kind), detailIsAPath);
+
+            // the line is one row and an error can be longer than the room the
+            // buttons leave it, so the whole of it stays reachable
+            statusTip.SetToolTip(lblStatus, lblStatus.FullText);
+        }
+
+        private static StatusTone ToneOf(StatusKind kind)
+        {
+            if (kind == StatusKind.Good) return StatusTone.Good;
+            if (kind == StatusKind.Bad) return StatusTone.Bad;
+            return StatusTone.Neutral;
         }
 
         private void ResetStatus()
@@ -613,15 +627,6 @@ namespace PCUserDetection
                 : "Ready. Save a photo to register this person.", StatusKind.Neutral);
         }
 
-        private void pnlStatusDot_Paint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (var brush = new SolidBrush(StatusColor()))
-            {
-                e.Graphics.FillEllipse(brush, 0, 0, pnlStatusDot.Width - 1, pnlStatusDot.Height - 1);
-            }
-        }
-
         #endregion
 
         #region Gallery
@@ -644,7 +649,7 @@ namespace PCUserDetection
             {
                 flpImages.Controls.Add(GalleryMessage(
                     "The registered images could not be listed.\n\n" + ex.Message));
-                lblCount.Text = "Images unavailable";
+                ShowImageCount(null);
                 return;
             }
 
@@ -661,9 +666,75 @@ namespace PCUserDetection
                     "No images yet. Use Add user to register the person at the PC."));
             }
 
-            lblCount.Text = imageFiles.Length == 1
-                ? "1 registered image"
-                : imageFiles.Length + " registered images";
+            ShowImageCount(imageFiles.Length);
+        }
+
+        /// <summary>
+        /// Hands the count to the two places that show it. Null is a listing
+        /// that failed, which is not the same as none and must not read as one.
+        /// </summary>
+        private void ShowImageCount(int? count)
+        {
+            imageCount = count;
+            pnlFolder.Invalidate();
+
+            foreach (RailButton row in flpNav.Controls)
+            {
+                if ((Screen)row.Tag != Screen.Images) continue;
+
+                row.Count = count == null ? null : count.Value.ToString();
+                row.Invalidate();
+            }
+        }
+
+        /// <summary>Says how many images there are and where they are kept.</summary>
+        private void pnlFolder_Paint(object sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Theme.Border))
+            {
+                e.Graphics.DrawLine(pen, 0, 16, pnlFolder.Width, 16);
+            }
+
+            const TextFormatFlags flags = TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                                          TextFormatFlags.NoPadding;
+
+            int top = pnlFolder.Padding.Top;
+            int height = pnlFolder.Height - top - pnlFolder.Padding.Bottom;
+            int x = 0;
+
+            if (imageCount != null)
+            {
+                string lead = imageCount == 1 ? "1 image in " : imageCount.Value + " images in ";
+
+                TextRenderer.DrawText(e.Graphics, lead, Theme.Small,
+                    new Rectangle(x, top, pnlFolder.Width, height), Theme.TextMuted, flags);
+
+                x += TextRenderer.MeasureText(e.Graphics, lead, Theme.Small,
+                    new Size(int.MaxValue, height), flags).Width;
+            }
+
+            // the folder is not a hardcoded string: it is the project folder in a
+            // development build and one under AppData in a published one
+            int room = pnlFolder.Width - x - lnkOpenFolder.Width - 8;
+            if (room <= 0) return;
+
+            TextRenderer.DrawText(e.Graphics, ImageFolder, Theme.Mono,
+                new Rectangle(x, top, room, height), Theme.TextMuted, flags | TextFormatFlags.EndEllipsis);
+        }
+
+        private void lnkOpenFolder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(ImageFolder) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                // an Explorer that will not open is not worth taking the app down
+                Console.WriteLine(ex);
+                MessageBox.Show("The folder could not be opened.\n\n" + ex.Message,
+                    "PC User Detection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         /// <summary>Text shown in place of the cards when there is nothing to show.</summary>

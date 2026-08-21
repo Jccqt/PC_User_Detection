@@ -53,6 +53,9 @@ namespace PCUserDetection
         /// </summary>
         private const int StallTimeoutMs = 8000;
 
+        /// <summary>The corner radius every control in the window shares.</summary>
+        private const int Radius = 3;
+
         private readonly System.Windows.Forms.Timer watchdog;
 
         // written from the capture thread on every frame and read by the
@@ -300,25 +303,45 @@ namespace PCUserDetection
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.Clear(Theme.Canvas);
+            // the canvas has 3 pixel corners, so whatever is behind the view has
+            // to be laid down first for the cut corners to show it
+            e.Graphics.Clear(Parent == null ? Theme.Background : Parent.BackColor);
 
-            lock (frameLock)
-            {
-                if (frame == null)
-                {
-                    TextRenderer.DrawText(e.Graphics, Placeholder, Theme.Body, ClientRectangle,
-                        Theme.TextMuted, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                }
-                else
-                {
-                    e.Graphics.InterpolationMode = InterpolationMode.Bilinear;
-                    e.Graphics.DrawImage(frame, FitRectangle(frame.Width, frame.Height));
-                }
-            }
+            Rectangle bounds = ClientRectangle;
+            bounds.Width -= 1;
+            bounds.Height -= 1;
 
-            using (var pen = new Pen(Theme.Border))
+            using (GraphicsPath canvas = Rounded.Path(bounds, Radius))
             {
-                e.Graphics.DrawRectangle(pen, 0, 0, Width - 1, Height - 1);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                using (var fill = new SolidBrush(Theme.Canvas))
+                {
+                    e.Graphics.FillPath(fill, canvas);
+                }
+
+                lock (frameLock)
+                {
+                    if (frame == null)
+                    {
+                        TextRenderer.DrawText(e.Graphics, Placeholder, Theme.Body, ClientRectangle,
+                            Theme.TextMuted, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
+                    else
+                    {
+                        // the frame is held to the same corners, so a picture
+                        // wider than the view cannot square them off again
+                        e.Graphics.SetClip(canvas);
+                        e.Graphics.InterpolationMode = InterpolationMode.Bilinear;
+                        e.Graphics.DrawImage(frame, FitRectangle(frame.Width, frame.Height));
+                        e.Graphics.ResetClip();
+                    }
+                }
+
+                using (var pen = new Pen(Theme.Border))
+                {
+                    e.Graphics.DrawPath(pen, canvas);
+                }
             }
         }
 

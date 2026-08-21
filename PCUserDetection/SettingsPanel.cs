@@ -21,39 +21,46 @@ namespace PCUserDetection
         /// </summary>
         private const string PasswordPlaceholder = "••••••••";
 
-        private const int LabelColumn = 140;
-        private const int FieldWidth = 660;
+        private const int LabelColumn = 150;
+        private const int FormWidth = 620;
+
+        /// <summary>The gap under a row, and the extra a section leaves after its last one.</summary>
+        private const int RowGap = 10;
+        private const int SectionGap = 4;
 
         /// <summary>What a status line means, so its colour survives a theme change.</summary>
         private enum Tone { Muted, Good, Bad }
 
+        private readonly Panel form;
         private readonly TableLayoutPanel rows;
+        private readonly Panel actions;
 
-        private readonly ChoiceStrip<bool> enabled = new ChoiceStrip<bool>();
-        private readonly ChoiceStrip<bool> attachPhoto = new ChoiceStrip<bool>();
-        private readonly ChoiceStrip<EmailDelivery> delivery = new ChoiceStrip<EmailDelivery>();
-        private readonly ChoiceStrip<EmailSecurity> security = new ChoiceStrip<EmailSecurity>();
+        private readonly CheckField enabled =
+            new CheckField("Email an alert when a face is not recognised");
+        private readonly CheckField attachPhoto =
+            new CheckField("Attach the photo that failed the check");
 
-        private readonly TextBox cooldown = new TextBox();
-        private readonly TextBox from = new TextBox();
-        private readonly TextBox to = new TextBox();
-        private readonly TextBox host = new TextBox();
-        private readonly TextBox port = new TextBox();
-        private readonly TextBox username = new TextBox();
-        private readonly TextBox password = new TextBox();
+        private readonly ComboField delivery = new ComboField();
+        private readonly ComboField security = new ComboField();
+
+        private readonly SpinField cooldown = new SpinField(0, int.MaxValue);
+        private readonly TextField from = new TextField();
+        private readonly TextField to = new TextField();
+        private readonly TextField host = new TextField();
+        private readonly SpinField port = new SpinField(1, 65535);
+        private readonly TextField username = new TextField();
+        private readonly TextField password = new TextField();
 
         private readonly Label deliveryHint = new Label();
-        private readonly Label status = new Label();
-        private readonly Button save = new Button();
-        private readonly Button test = new Button();
+        private readonly StatusLine status = new StatusLine();
+        private readonly ToolTip statusTip = new ToolTip();
+        private readonly FlatButton save = new FlatButton();
+        private readonly FlatButton test = new FlatButton();
 
         private EmailSettings settings = new EmailSettings();
-        private Tone statusTone = Tone.Muted;
 
         public SettingsPanel()
         {
-            AutoScroll = true;
-
             rows = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
@@ -62,13 +69,19 @@ namespace PCUserDetection
                 ColumnCount = 2,
                 // wide fields on a maximised window would be a stripe of empty
                 // white, so the form stops growing at a readable width
-                MaximumSize = new Size(FieldWidth, 0)
+                MaximumSize = new Size(FormWidth, 0)
             };
             rows.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, LabelColumn));
             rows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
-            enabled.Add("On", true).Add("Off", false);
-            attachPhoto.Add("Yes", true).Add("No", false);
+            // the form scrolls and the action bar does not, so the status line and
+            // Save are on screen wherever the form has been scrolled to
+            form = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                Padding = new Padding(24, 0, 24, 0)
+            };
 
             delivery.Add("SMTP server", EmailDelivery.Smtp).Add("Folder", EmailDelivery.FileDrop);
             delivery.ValueChanged += (s, e) => ShowDeliveryFields();
@@ -80,26 +93,31 @@ namespace PCUserDetection
             password.UseSystemPasswordChar = true;
 
             AddHeading("Alerts");
-            AddRow("Email an alert", enabled);
-            AddRow("Attach the photo", attachPhoto);
-            AddRow("Cooldown", Frame(cooldown), "Minutes to wait before another alert may be sent.");
+            AddWideRow(enabled);
+            AddWideRow(attachPhoto);
+            AddRow("Cooldown", WithCaption(cooldown, 76, "minutes between alerts"));
+            EndSection();
 
             AddHeading("Message");
-            AddRow("From", Frame(from), "The mailbox the alert is sent from.");
-            AddRow("To", Frame(to), "Who receives it. Separate several addresses with commas.");
+            AddRow("From", Stretch(from));
+            AddRow("To", Stretch(to));
+            AddHint("Separate several addresses with commas.");
+            EndSection();
 
             AddHeading("Delivery");
-            AddRow("Send using", delivery);
+            AddRow("Send using", Fixed(delivery, 220));
             AddHint(deliveryHint);
-            AddRow("Server", Frame(host));
-            AddRow("Port", Frame(port));
-            AddRow("Security", security);
-            AddRow("Username", Frame(username), "Leave empty for a relay that does not ask.");
-            AddRow("Password", Frame(password));
+            AddRow("Server", Pair(host, port, 88));
+            AddRow("Security", Fixed(security, 220));
+            AddRow("Sign in", Pair(username, password, 0));
+            AddHint("Leave the username empty for a relay that does not ask.");
+            EndSection();
 
-            AddActions();
+            actions = BuildActionBar();
 
-            Controls.Add(rows);
+            form.Controls.Add(rows);
+            Controls.Add(form);
+            Controls.Add(actions);
 
             Reload();
         }
@@ -113,10 +131,10 @@ namespace PCUserDetection
             string problem;
             settings = EmailSettings.Load(out problem);
 
-            enabled.Value = settings.Enabled;
-            attachPhoto.Value = settings.AttachPhoto;
-            delivery.Value = settings.Delivery;
-            security.Value = settings.Security;
+            enabled.Checked = settings.Enabled;
+            attachPhoto.Checked = settings.AttachPhoto;
+            delivery.SetValueQuietly(settings.Delivery);
+            security.SetValueQuietly(settings.Security);
 
             cooldown.Text = settings.CooldownMinutes.ToString();
             from.Text = settings.From;
@@ -146,19 +164,14 @@ namespace PCUserDetection
         public void ApplyTheme()
         {
             BackColor = Theme.Background;
+            form.BackColor = Theme.Background;
             rows.BackColor = Theme.Background;
+            actions.BackColor = Theme.Surface;
 
             ApplyTheme(rows);
 
-            enabled.ApplyTheme();
-            attachPhoto.ApplyTheme();
-            delivery.ApplyTheme();
-            security.ApplyTheme();
-
             Theme.StylePrimary(save);
             Theme.StyleGhost(test);
-
-            status.ForeColor = StatusColor();
 
             Invalidate(true);
         }
@@ -171,12 +184,29 @@ namespace PCUserDetection
         {
             foreach (Control control in parent.Controls)
             {
-                var box = control as TextBox;
+                // a spin box is a text field with a step column, so this covers both
+                var field = control as TextField;
 
-                if (box != null)
+                if (field != null)
                 {
-                    box.BackColor = Theme.Surface;
-                    box.ForeColor = Theme.Text;
+                    field.ApplyTheme();
+                    continue;
+                }
+
+                var combo = control as ComboField;
+
+                if (combo != null)
+                {
+                    combo.ApplyTheme();
+                    continue;
+                }
+
+                var check = control as CheckField;
+
+                if (check != null)
+                {
+                    check.BackColor = Theme.Background;
+                    check.Invalidate();
                     continue;
                 }
 
@@ -184,171 +214,272 @@ namespace PCUserDetection
 
                 if (label != null)
                 {
-                    // headings are marked when they are built, so they can stay
-                    // at full strength while the rest of the text is muted
-                    label.ForeColor = IsHeading(label) ? Theme.Text : Theme.TextMuted;
+                    // a hint is marked as one when it is built, so it can stay
+                    // muted while the headings and row labels are at full strength
+                    label.ForeColor = IsHint(label) ? Theme.TextMuted : Theme.Text;
+                    label.Invalidate();
                     continue;
                 }
 
-                var panel = control as Panel;
-
-                if (panel != null)
-                {
-                    // only the frame around a text box is a raised surface; the
-                    // panels that group buttons have to disappear into the page
-                    panel.BackColor = IsField(panel) ? Theme.Surface : Theme.Background;
-                    ApplyTheme(panel);
-                }
+                ApplyTheme(control);
             }
         }
 
         #region Rows
 
+        /// <summary>
+        /// A section title with a hairline under it. The rule is what separates
+        /// one part of the form from the next, in place of the card panels the
+        /// rows used to sit in.
+        /// </summary>
         private void AddHeading(string text)
         {
             var heading = new Label
             {
                 Text = text,
-                Tag = HeadingTag,
-                AutoSize = true,
-                Font = Theme.Nav,
-                Margin = new Padding(0, rows.RowCount == 0 ? 4 : 22, 0, 6)
+                AutoSize = false,
+                Dock = DockStyle.Fill,
+                Font = Theme.Section,
+                Height = 23,
+                TextAlign = ContentAlignment.TopLeft,
+                // the air over a heading is left by the section above it, in
+                // EndSection; what is set here is the gap under the rule
+                Margin = new Padding(0, 0, 0, 12)
             };
+            heading.Paint += Heading_Paint;
 
             rows.Controls.Add(heading, 0, rows.RowCount);
             rows.SetColumnSpan(heading, 2);
             rows.RowCount++;
         }
 
-        private void AddRow(string text, Control field)
+        private static void Heading_Paint(object sender, PaintEventArgs e)
         {
-            AddRow(text, field, null);
+            var heading = (Label)sender;
+
+            using (var pen = new Pen(Theme.Border))
+            {
+                e.Graphics.DrawLine(pen, 0, heading.Height - 1, heading.Width, heading.Height - 1);
+            }
         }
 
-        private void AddRow(string text, Control field, string hint)
+        /// <summary>A row with a label in the left column and its control beside it.</summary>
+        private void AddRow(string text, Control field)
         {
             var label = new Label
             {
                 Text = text,
                 AutoSize = true,
                 Font = Theme.Body,
-                Margin = new Padding(0, 11, 12, 0)
+                Anchor = AnchorStyles.Left,
+                Margin = new Padding(0, 0, 12, RowGap)
             };
 
             rows.Controls.Add(label, 0, rows.RowCount);
             rows.Controls.Add(field, 1, rows.RowCount);
             rows.RowCount++;
+        }
 
-            if (hint == null) return;
+        /// <summary>
+        /// A control that stands in the field column with nothing labelling it,
+        /// which is what a check box does: its wording is its own.
+        /// </summary>
+        private void AddWideRow(Control field)
+        {
+            field.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            field.Margin = new Padding(0, 0, 0, RowGap);
 
-            var note = new Label
-            {
-                Text = hint,
-                AutoSize = true,
-                Font = Theme.Small,
-                Margin = new Padding(2, 0, 0, 8)
-            };
-
-            rows.Controls.Add(note, 1, rows.RowCount);
+            rows.Controls.Add(field, 1, rows.RowCount);
             rows.RowCount++;
+        }
+
+        private void AddHint(string text)
+        {
+            AddHint(new Label { Text = text });
         }
 
         /// <summary>Adds a line of explanation on its own, under the row above it.</summary>
         private void AddHint(Label hint)
         {
+            hint.Tag = HintTag;
             hint.AutoSize = true;
             hint.Font = Theme.Small;
-            hint.Margin = new Padding(2, 0, 0, 8);
-            hint.MaximumSize = new Size(FieldWidth - LabelColumn, 0);
+            hint.Margin = new Padding(0, 0, 0, RowGap);
+            hint.MaximumSize = new Size(FormWidth - LabelColumn, 0);
 
             rows.Controls.Add(hint, 1, rows.RowCount);
             rows.RowCount++;
         }
 
-        private void AddActions()
+        /// <summary>
+        /// Puts the extra air a section leaves under its last row. Sections are
+        /// closed by hand rather than by the next heading, so that the last one
+        /// is not left sitting against the action bar.
+        /// </summary>
+        private void EndSection()
         {
-            save.Text = "Save";
-            save.Width = 120;
-            save.Margin = new Padding(0, 22, 8, 0);
-            save.Click += Save_Click;
+            Control last = rows.GetControlFromPosition(1, rows.RowCount - 1);
+            if (last == null) return;
 
-            test.Text = "Send test email";
-            test.Width = 150;
-            test.Margin = new Padding(0, 22, 0, 0);
-            test.Click += Test_Click;
+            Padding margin = last.Margin;
+            last.Margin = new Padding(margin.Left, margin.Top, margin.Right, margin.Bottom + SectionGap);
+        }
 
-            var actions = new FlowLayoutPanel
-            {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                WrapContents = false,
-                Margin = new Padding(0)
-            };
-            actions.Controls.Add(save);
-            actions.Controls.Add(test);
-
-            rows.Controls.Add(actions, 1, rows.RowCount);
-            rows.RowCount++;
-
-            status.AutoSize = true;
-            status.Font = Theme.Small;
-            status.Margin = new Padding(2, 12, 0, 12);
-            status.MaximumSize = new Size(FieldWidth - LabelColumn, 0);
-
-            rows.Controls.Add(status, 1, rows.RowCount);
-            rows.RowCount++;
+        /// <summary>A field that fills the width the form leaves it.</summary>
+        private static Control Stretch(Control field)
+        {
+            field.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            field.Margin = new Padding(0, 0, 0, RowGap);
+            return field;
         }
 
         /// <summary>
-        /// Puts a text box in a panel that paints the border. A text box draws its
-        /// own in a system colour that no property changes, so it is given none
-        /// and the panel around it draws one from the palette instead.
+        /// A field of a set width, for a list that does not need the room. It is
+        /// held in a row that fills the column, because the table would otherwise
+        /// size a field that is not stretched to fit its own idea of it.
         /// </summary>
-        private static Panel Frame(TextBox box)
+        private static Control Fixed(Control field, int width)
         {
-            box.BorderStyle = BorderStyle.None;
-            box.Font = Theme.Body;
-            box.Dock = DockStyle.Fill;
+            field.Dock = DockStyle.Left;
+            field.Width = width;
 
-            var frame = new Panel
+            var row = new Panel
             {
-                Tag = FieldTag,
-                Height = 32,
-                Dock = DockStyle.Top,
-                Margin = new Padding(0, 4, 0, 4),
-                // the text box keeps its own height, so the top padding is what
-                // centres it rather than the dock doing it
-                Padding = new Padding(9, 7, 9, 0)
+                Height = field.Height,
+                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+                Margin = new Padding(0, 0, 0, RowGap)
             };
-            frame.Paint += Frame_Paint;
-            frame.Controls.Add(box);
+            row.Controls.Add(field);
 
-            return frame;
+            return row;
         }
 
-        private static void Frame_Paint(object sender, PaintEventArgs e)
+        /// <summary>
+        /// Two fields side by side, eight pixels apart. A width of zero shares
+        /// the room evenly between them; anything else pins the second one.
+        /// </summary>
+        private static Control Pair(Control first, Control second, int secondWidth)
         {
-            var frame = (Panel)sender;
+            var pair = new TableLayoutPanel
+            {
+                ColumnCount = 2,
+                RowCount = 1,
+                Height = TextField.FieldHeight,
+                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+                Margin = new Padding(0, 0, 0, RowGap)
+            };
+
+            if (secondWidth == 0)
+            {
+                pair.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+                pair.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+                first.Margin = new Padding(0, 0, 4, 0);
+                second.Margin = new Padding(4, 0, 0, 0);
+            }
+            else
+            {
+                pair.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                pair.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, secondWidth + 8));
+                first.Margin = new Padding(0);
+                second.Margin = new Padding(8, 0, 0, 0);
+            }
+
+            first.Dock = DockStyle.Fill;
+            second.Dock = DockStyle.Fill;
+
+            pair.Controls.Add(first, 0, 0);
+            pair.Controls.Add(second, 1, 0);
+
+            return pair;
+        }
+
+        /// <summary>A narrow field with a few words of unit after it.</summary>
+        private static Control WithCaption(Control field, int width, string caption)
+        {
+            var note = new Label
+            {
+                Text = caption,
+                Tag = HintTag,
+                Dock = DockStyle.Fill,
+                Font = Theme.Control,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(8, 0, 0, 0)
+            };
+
+            field.Dock = DockStyle.Left;
+            field.Width = width;
+
+            var row = new Panel
+            {
+                Height = TextField.FieldHeight,
+                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+                Margin = new Padding(0, 0, 0, RowGap)
+            };
+            row.Controls.Add(note);
+            row.Controls.Add(field);
+
+            return row;
+        }
+
+        /// <summary>
+        /// The bar along the foot of the screen: what happened on the left, and
+        /// what can be done about it on the right.
+        /// </summary>
+        private Panel BuildActionBar()
+        {
+            save.Text = "&Save";
+            save.Size = new Size(104, 32);
+            save.Margin = new Padding(0);
+            save.Click += Save_Click;
+
+            test.Text = "Send test email";
+            test.Size = new Size(132, 32);
+            test.Margin = new Padding(0, 0, 8, 0);
+            test.Click += Test_Click;
+
+            var buttons = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                Size = new Size(244, 32)
+            };
+            buttons.Controls.Add(save);
+            buttons.Controls.Add(test);
+
+            status.Dock = DockStyle.Fill;
+
+            var bar = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 60,
+                Padding = new Padding(24, 14, 24, 14)
+            };
+            bar.Paint += ActionBar_Paint;
+            bar.Controls.Add(status);
+            bar.Controls.Add(buttons);
+
+            return bar;
+        }
+
+        /// <summary>Separates the action bar from the form above it.</summary>
+        private void ActionBar_Paint(object sender, PaintEventArgs e)
+        {
+            var bar = (Panel)sender;
 
             using (var pen = new Pen(Theme.Border))
             {
-                e.Graphics.DrawRectangle(pen, 0, 0, frame.Width - 1, frame.Height - 1);
+                e.Graphics.DrawLine(pen, 0, 0, bar.Width, 0);
             }
         }
 
-        // marks put on controls as they are built, so the theme walk can tell a
-        // heading from a hint and a field frame from a plain grouping panel
-        private const string HeadingTag = "heading";
-        private const string FieldTag = "field";
+        // the mark put on a label as it is built, so the theme walk can tell a
+        // hint, which is muted, from a heading or a row label, which are not
+        private const string HintTag = "hint";
 
-        private static bool IsHeading(Label label)
+        private static bool IsHint(Label label)
         {
-            return HeadingTag.Equals(label.Tag as string);
-        }
-
-        private static bool IsField(Panel panel)
-        {
-            return FieldTag.Equals(panel.Tag as string);
+            return HintTag.Equals(label.Tag as string);
         }
 
         #endregion
@@ -432,7 +563,7 @@ namespace PCUserDetection
             // reached to be corrected would be a dead end
             int portNumber = settings.Port;
 
-            if (delivery.Value == EmailDelivery.Smtp &&
+            if ((EmailDelivery)delivery.Value == EmailDelivery.Smtp &&
                 !TryReadNumber(port, 1, 65535,
                     "The port has to be a whole number between 1 and 65535.", out portNumber))
             {
@@ -441,10 +572,10 @@ namespace PCUserDetection
 
             collected = new EmailSettings
             {
-                Enabled = enabled.Value,
-                AttachPhoto = attachPhoto.Value,
-                Delivery = delivery.Value,
-                Security = security.Value,
+                Enabled = enabled.Checked,
+                AttachPhoto = attachPhoto.Checked,
+                Delivery = (EmailDelivery)delivery.Value,
+                Security = (EmailSecurity)security.Value,
                 CooldownMinutes = cooldownMinutes,
                 From = from.Text.Trim(),
                 To = to.Text.Trim(),
@@ -472,8 +603,7 @@ namespace PCUserDetection
                     Console.WriteLine(ex);
                     SetStatus("The password could not be encrypted, so nothing was saved. " + ex.Message,
                         Tone.Bad);
-                    password.Focus();
-                    password.SelectAll();
+                    password.Highlight();
 
                     collected = null;
                     return false;
@@ -488,7 +618,7 @@ namespace PCUserDetection
         /// puts <paramref name="problem"/> on the status line and leaves the
         /// caret in the box that has to be fixed.
         /// </summary>
-        private bool TryReadNumber(TextBox box, int least, int most, string problem, out int value)
+        private bool TryReadNumber(TextField box, int least, int most, string problem, out int value)
         {
             // the invariant culture, so a thousands separator or a stray space is
             // a mistake to point at rather than something a machine abroad accepts
@@ -498,8 +628,7 @@ namespace PCUserDetection
             if (read && value >= least && value <= most) return true;
 
             SetStatus(problem, Tone.Bad);
-            box.Focus();
-            box.SelectAll();
+            box.Highlight();
 
             return false;
         }
@@ -531,14 +660,13 @@ namespace PCUserDetection
 
         private void ShowDeliveryFields()
         {
-            bool smtp = delivery.Value == EmailDelivery.Smtp;
+            bool smtp = (EmailDelivery)delivery.Value == EmailDelivery.Smtp;
 
             host.Enabled = smtp;
             port.Enabled = smtp;
             username.Enabled = smtp;
             password.Enabled = smtp;
-
-            foreach (Control control in security.Controls) control.Enabled = smtp;
+            security.Enabled = smtp;
 
             deliveryHint.Text = smtp
                 ? "The alert is sent through the server below."
@@ -548,22 +676,28 @@ namespace PCUserDetection
 
         private void SetStatus(string text, Tone tone)
         {
-            statusTone = tone;
-            status.Text = text;
-            status.ForeColor = StatusColor();
+            // the line resolves its own colour while painting, so a status
+            // already on screen takes the new palette when the theme changes
+            status.Set(text, ToneOf(tone));
+
+            // the bar is one row and an error can be longer than the room the
+            // buttons leave it, so the whole of it stays reachable
+            statusTip.SetToolTip(status, status.FullText);
         }
 
-        /// <summary>
-        /// Resolved on demand rather than stored, so a status already on screen
-        /// takes the new palette when the theme changes.
-        /// </summary>
-        private Color StatusColor()
+        private static StatusTone ToneOf(Tone tone)
         {
-            if (statusTone == Tone.Good) return Theme.Success;
-            if (statusTone == Tone.Bad) return Theme.Danger;
-            return Theme.TextMuted;
+            if (tone == Tone.Good) return StatusTone.Good;
+            if (tone == Tone.Bad) return StatusTone.Bad;
+            return StatusTone.Neutral;
         }
 
         #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) statusTip.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }
