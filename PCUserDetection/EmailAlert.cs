@@ -44,6 +44,12 @@ namespace PCUserDetection
     internal static class EmailAlert
     {
         /// <summary>
+        /// How long a copy of a frame is left in the temp folder before it is
+        /// taken to have been abandoned by a send that never finished.
+        /// </summary>
+        private static readonly TimeSpan CopyLifetime = TimeSpan.FromDays(1);
+
+        /// <summary>
         /// When the last alert went out, so the cooldown can be applied. Held in
         /// memory rather than on disk on purpose: restarting the app is a
         /// deliberate act, and it should be able to alert again straight away.
@@ -213,7 +219,10 @@ namespace PCUserDetection
             {
                 if (!File.Exists(photoPath)) return null;
 
-                string copy = Path.Combine(AppPaths.AttachmentCopies,
+                string folder = AppPaths.AttachmentCopies;
+                SweepAbandonedCopies(folder);
+
+                string copy = Path.Combine(folder,
                     string.Format("Anonymous_{0:yyyyMMdd_HHmmss_fff}.jpeg", DateTime.Now));
 
                 File.Copy(photoPath, copy, true);
@@ -238,7 +247,53 @@ namespace PCUserDetection
             }
             catch (Exception)
             {
-                // a stray file in the temp folder is Windows' problem to clean up
+                // one that will not go is left for the next sweep to find
+            }
+        }
+
+        /// <summary>
+        /// Clears away copies that an earlier send never got to delete.
+        /// </summary>
+        /// <remarks>
+        /// A copy is deleted as soon as its message is away, so one still here
+        /// a day later belongs to a send that was interrupted rather than
+        /// finished: the app closed part way through it, or the machine went
+        /// down under it. Only copies this class wrote are looked at, and only
+        /// ones far too old to belong to a send still running, so nothing can
+        /// be taken out from under a message being composed right now.
+        ///
+        /// This never throws. It runs while an alert is being prepared, and an
+        /// untidy temp folder is not a reason to send that alert without its
+        /// photo.
+        /// </remarks>
+        private static void SweepAbandonedCopies(string folder)
+        {
+            string[] copies;
+
+            try
+            {
+                copies = Directory.GetFiles(folder, "Anonymous_*.jpeg");
+            }
+            catch (Exception ex)
+            {
+                // a folder that cannot be listed is not one worth tidying
+                Console.WriteLine(ex);
+                return;
+            }
+
+            DateTime abandoned = DateTime.UtcNow - CopyLifetime;
+
+            foreach (string copy in copies)
+            {
+                try
+                {
+                    if (File.GetLastWriteTimeUtc(copy) < abandoned) File.Delete(copy);
+                }
+                catch (Exception ex)
+                {
+                    // one file that will not go is no reason to leave the rest
+                    Console.WriteLine(ex);
+                }
             }
         }
     }
