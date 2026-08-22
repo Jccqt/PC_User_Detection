@@ -27,6 +27,11 @@ namespace PCUserDetection
         {
             Height = FieldHeight;
 
+            // A panel only repaints itself on a resize while a designer holds
+            // it, so without this the border drawn below is left behind at the
+            // old width when the window narrows.
+            SetStyle(ControlStyles.ResizeRedraw, true);
+
             box.BorderStyle = BorderStyle.None;
             box.Font = Theme.Control;
             box.Dock = DockStyle.Fill;
