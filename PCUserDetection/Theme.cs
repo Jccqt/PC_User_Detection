@@ -277,6 +277,8 @@ namespace PCUserDetection
     /// window is rounder than that. Pass the control's own client rectangle
     /// deflated by 1, so the stroke has a pixel to sit in and is not clipped by
     /// the edge it is drawn against.
+    /// A path that is only filled or used as a clipping region takes the
+    /// undeflated rectangle, since no stroke has to fit inside it.
     /// </remarks>
     internal static class Rounded
     {
@@ -285,9 +287,9 @@ namespace PCUserDetection
             int d = radius * 2;
             var path = new GraphicsPath();
             path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
-            path.AddArc(bounds.Right - d - 1, bounds.Y, d, d, 270, 90);
-            path.AddArc(bounds.Right - d - 1, bounds.Bottom - d - 1, d, d, 0, 90);
-            path.AddArc(bounds.X, bounds.Bottom - d - 1, d, d, 90, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
             path.CloseFigure();
             return path;
         }

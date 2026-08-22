@@ -37,10 +37,10 @@ namespace PCUserDetection
             Padding = new Padding(1);
 
             // The card has 3 pixel corners and its children are square, so the
-            // whole card is clipped to the shape its border is drawn in. The
-            // rectangle is a pixel wider and taller than the card, because the
-            // path is measured for a stroke and this is measured for a fill.
-            using (GraphicsPath shape = Rounded.Path(new Rectangle(0, 0, CardWidth + 1, CardHeight + 1), Radius))
+            // whole card is clipped to the shape its border is drawn in.
+            // This rectangle is not deflated the way the border's is: the border
+            // is measured for a stroke, and the region is measured for a fill.
+            using (GraphicsPath shape = Rounded.Path(new Rectangle(0, 0, CardWidth, CardHeight), Radius))
             {
                 Region = new Region(shape);
             }
