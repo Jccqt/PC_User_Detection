@@ -115,6 +115,11 @@ longer accept a password over SMTP at all, so send from somewhere else.
 the cooldown, the attachment, the composed message — with nothing but a folder
 to look in afterwards, which is what a fresh clone with no mail account needs.
 
+The newest 200 messages are kept and older ones are cleared away as new ones
+arrive, so a machine left running on folder delivery does not fill up with
+them. Only the files the app wrote are counted or removed; anything else left
+in the folder stays where it is.
+
 ### Where the settings are kept
 
 In `%APPDATA%\PCUserDetection\email.json`, next to the theme setting, and never

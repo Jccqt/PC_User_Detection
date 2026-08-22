@@ -111,6 +111,14 @@ namespace PCUserDetection
     /// </remarks>
     internal class FileDropEmailSender : IEmailSender
     {
+        /// <summary>
+        /// How many messages are kept. Enough that somebody exercising the alert
+        /// never watches their own work disappear behind them, and few enough
+        /// that a machine left running on folder delivery does not quietly fill
+        /// up with them.
+        /// </summary>
+        private const int Keep = 200;
+
         private readonly EmailSettings settings;
 
         public FileDropEmailSender(EmailSettings settings)
@@ -127,15 +135,63 @@ namespace PCUserDetection
         {
             MimeMessage mime = EmailComposer.Compose(settings, message);
 
+            string folder = AppPaths.EmailDrops;
             string filename = string.Format("Alert_{0:yyyyMMdd_HHmmss_fff}.eml", DateTime.Now);
-            string path = Path.Combine(AppPaths.EmailDrops, filename);
 
-            using (var stream = File.Create(path))
+            using (var stream = File.Create(Path.Combine(folder, filename)))
             {
                 mime.WriteTo(stream, cancellationToken);
             }
 
+            TrimOldest(folder);
+
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Deletes the oldest messages once there are more than <see cref="Keep"/>
+        /// of them.
+        /// </summary>
+        /// <remarks>
+        /// Only the files this class wrote are counted or deleted. The name it
+        /// gives them both marks them as its own and, because it starts with
+        /// the moment they were written, puts them in order when sorted, so
+        /// anything else somebody keeps in the folder is left where it is.
+        ///
+        /// This never throws. The message it was called after has already been
+        /// written, and a folder that could not be tidied is not a failed alert.
+        /// </remarks>
+        private static void TrimOldest(string folder)
+        {
+            string[] drops;
+
+            try
+            {
+                drops = Directory.GetFiles(folder, "Alert_*.eml");
+            }
+            catch (Exception ex)
+            {
+                // a folder that cannot be listed is not one worth tidying
+                Console.WriteLine(ex);
+                return;
+            }
+
+            if (drops.Length <= Keep) return;
+
+            Array.Sort(drops, StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < drops.Length - Keep; i++)
+            {
+                try
+                {
+                    File.Delete(drops[i]);
+                }
+                catch (Exception ex)
+                {
+                    // one that will not go is tried again after the next alert
+                    Console.WriteLine(ex);
+                }
+            }
         }
     }
 
