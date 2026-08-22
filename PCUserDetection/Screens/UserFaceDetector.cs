@@ -560,23 +560,57 @@ namespace PCUserDetection
                 string filename = (taken == 1 ? moment : moment + "_" + taken) + ".jpeg";
                 string path = Path.Combine(AppPaths.CapturedImages, filename);
 
+                FileStream file;
+
                 try
                 {
                     // CreateNew rather than asking first whether the name is free,
                     // so nothing can take it between the question and the write
-                    using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+                    file = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
+                }
+                catch (IOException) when (File.Exists(path))
+                {
+                    // the name is already taken, which is the one failure another
+                    // name answers. A disk with no room left on it fails the open
+                    // too, but with no file of that name to show for it, so it is
+                    // thrown rather than tried again under _2, _3, _4...
+                    continue;
+                }
+
+                try
+                {
+                    using (file)
                     {
                         frame.Save(file, System.Drawing.Imaging.ImageFormat.Jpeg);
                     }
-
-                    return filename;
                 }
-                catch (IOException)
+                catch (Exception)
                 {
-                    // a disk with no room left on it fails the same way as a name
-                    // already taken, and only the second is worth another name
-                    if (!File.Exists(path)) throw;
+                    // past the open the file is this call's own, and one a write
+                    // left part way through holds no photo worth keeping, so it
+                    // does not stay behind in the gallery
+                    Discard(path);
+                    throw;
                 }
+
+                return filename;
+            }
+        }
+
+        /// <summary>
+        /// Deletes a file this class wrote and could not finish, without putting
+        /// a second failure in front of the one being reported.
+        /// </summary>
+        private static void Discard(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                // an empty file left behind is the smaller of the two problems
+                Console.WriteLine(ex);
             }
         }
 
