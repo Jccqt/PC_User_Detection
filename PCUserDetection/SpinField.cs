@@ -83,13 +83,25 @@ namespace PCUserDetection
                 return;
             }
 
-            value += by;
-
-            if (value < least) value = least;
-            if (value > most) value = most;
-
-            Text = value.ToString(CultureInfo.InvariantCulture);
+            Text = Stepped(value, by, least, most).ToString(CultureInfo.InvariantCulture);
             Box.SelectionStart = Text.Length;
+        }
+
+        /// <summary>
+        /// One step of a number, held at the ends of the range rather than
+        /// carried past them. Apart from the field itself so that it can be
+        /// read and checked without a window to click on.
+        /// </summary>
+        internal static int Stepped(int value, int by, int least, int most)
+        {
+            // Widened first: stepping up from int.MaxValue would otherwise wrap
+            // round to the far end and the clamp would read that as the least.
+            long stepped = (long)value + by;
+
+            if (stepped < least) stepped = least;
+            if (stepped > most) stepped = most;
+
+            return (int)stepped;
         }
     }
 }
