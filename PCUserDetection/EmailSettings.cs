@@ -145,7 +145,12 @@ namespace PCUserDetection
         {
             problem = null;
 
-            string path = AppPaths.EmailSetting;
+            // the path is asked for by name rather than by the property that
+            // creates the folder: a folder under AppData that cannot be made
+            // would throw from here, outside the try below, and take the
+            // settings screen and the window with it. Nothing is there to read
+            // in that case, which is a fresh install and answered with defaults
+            string path = AppPaths.EmailSettingPath;
 
             try
             {

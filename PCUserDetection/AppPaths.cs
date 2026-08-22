@@ -66,12 +66,35 @@ namespace PCUserDetection
         }
 
         /// <summary>
+        /// Names the same file as <see cref="EmailSetting"/> without creating the
+        /// folder it sits in, for reading the settings back, which must not raise
+        /// when the folder cannot be made. A folder that is not there holds no
+        /// file, which is what a fresh install looks like and is answered with
+        /// the defaults rather than with a failure.
+        /// </summary>
+        public static string EmailSettingPath
+        {
+            get { return Path.Combine(UserFolderPath, "email.json"); }
+        }
+
+        /// <summary>
         /// Where the file drop delivery mode writes messages instead of sending
         /// them, so the alert can be exercised without any mail account at all.
         /// </summary>
         public static string EmailDrops
         {
             get { return EnsureDirectory(Path.Combine(UserFolder, "SentMail")); }
+        }
+
+        /// <summary>
+        /// Names the same folder as <see cref="EmailDrops"/> without creating it,
+        /// for the screens that only say where the alerts would be written. A
+        /// folder that cannot be made is worth reporting when a message is
+        /// actually being written to it, not while a sentence about it is drawn.
+        /// </summary>
+        public static string EmailDropsPath
+        {
+            get { return Path.Combine(UserFolderPath, "SentMail"); }
         }
 
         /// <summary>

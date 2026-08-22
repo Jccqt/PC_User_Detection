@@ -665,7 +665,7 @@ namespace PCUserDetection
 
             if (settings.Delivery == EmailDelivery.FileDrop)
             {
-                return "Alerts are on, written to " + AppPaths.EmailDrops + ".";
+                return "Alerts are on, written to " + AppPaths.EmailDropsPath + ".";
             }
 
             return "Alerts are on, sent to " + settings.To + ".";
@@ -689,7 +689,7 @@ namespace PCUserDetection
 
             deliveryHint.Text = smtp
                 ? "The alert is sent through the server below."
-                : "The alert is written to " + AppPaths.EmailDrops +
+                : "The alert is written to " + AppPaths.EmailDropsPath +
                   " as an .eml file instead of being sent. Useful for trying the alert out without a mail account.";
         }
 
