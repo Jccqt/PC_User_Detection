@@ -131,20 +131,33 @@ again there.
 
 ```
 PCUserDetection/
+├── Program.cs               starts the app, and turns a crash into a sentence
 ├── UserFaceDetector.cs      the window: navigation and the four screens
+├── SettingsPanel.cs         the Settings screen
 ├── Theme.cs                 colours, fonts and button styles
+├── AppIcon.cs               the window icon, read from the embedded .ico
 ├── CameraView.cs            the webcam feed and the frame it hands out
 ├── ImageCard.cs             one registered image in the gallery
-├── ChoiceStrip.cs           a row of buttons where one is the choice in force
-├── SettingsPanel.cs         the Settings screen
+├── RailButton.cs            one row of the navigation rail, with its count
+├── StatusLine.cs            the line that says what just happened
+├── FlatButton.cs            a button, filled or outlined
+├── TextField.cs             a line of text to type in
+├── ComboField.cs            a drop-down list
+├── CheckField.cs            a check box
+├── SpinField.cs             a whole number, with a step column
 ├── FaceRecognizer.cs        face detection and embedding comparison
 ├── EmailAlert.cs            whether a failed check becomes an email, and what it says
 ├── EmailSender.cs           the transports: SMTP, and the folder used in its place
 ├── EmailSettings.cs         the alert settings, and the encrypted password
 ├── AppPaths.cs              resolves the image folders and the settings files
+├── Assets/                  the app icon, and the artwork it is drawn from
 ├── AnonymousImages/         the most recent captured frame
 └── CapturedImages/          registered user images
 ```
+
+The four `*Field` controls and `FlatButton` are what the screens are built
+from, each painted from the palette rather than coloured by properties; see the
+note on that [below](#notes).
 
 Image paths are resolved in one place, [`AppPaths`](PCUserDetection/AppPaths.cs),
 from the folder the executable lives in. Running from the source tree, it walks
@@ -180,11 +193,14 @@ interface, with nothing above it changing.
   re-paint it; the next run picks the new setting up.
 - The screens are docked rather than positioned by pixel, so the window can be
   resized and the camera feed grows with it.
-- The Settings screen uses [`ChoiceStrip`](PCUserDetection/ChoiceStrip.cs) and
-  bordered panels rather than combo boxes, check boxes and bordered text boxes.
-  Those three paint parts of themselves in system colours that no property
-  turns off, which looks wrong against the dark palette; a button and a panel
-  obey the colours they are given.
+- The Settings screen uses real combo boxes, check boxes and text boxes, wrapped
+  in [`ComboField`](PCUserDetection/ComboField.cs),
+  [`CheckField`](PCUserDetection/CheckField.cs) and
+  [`TextField`](PCUserDetection/TextField.cs). Each of the three paints part of
+  itself — a border, a drop arrow, a tick — in a system colour that no property
+  turns off, which looks wrong against the dark palette. Clipping that away and
+  drawing it from the palette keeps the keyboard and screen reader behaviour the
+  real control has, which the button strips these replaced did not.
 - A failed alert never interrupts anything. It comes back as a result that ends
   up on the status line, so an unreachable mail server costs you the alert and
   nothing else.
