@@ -20,6 +20,9 @@ namespace PCUserDetection
         /// <summary>The project file that marks a development build's tree.</summary>
         private const string ProjectFile = "PCUserDetection.csproj";
 
+        /// <summary>The name the app's own folders take, whichever root they sit under.</summary>
+        private const string FolderName = "PCUserDetection";
+
         /// <summary>
         /// The folder the two image folders sit in. Resolved once, since the
         /// executable does not move while the app is running.
@@ -98,6 +101,25 @@ namespace PCUserDetection
         }
 
         /// <summary>
+        /// Holds the copy of a captured frame that an alert has attached, for
+        /// as long as the message is being sent. Why a copy is made rather than
+        /// the frame itself attached is at the one place that asks for this,
+        /// EmailAlert.
+        /// </summary>
+        /// <remarks>
+        /// Under the temp folder rather than beside the images. A copy here is
+        /// finished with the moment the message is away and is deleted then, and
+        /// temp is somewhere Windows already clears up, which is the right end
+        /// for one that a crash left behind. Nothing shows this path or reads it
+        /// back, so it has no name-only twin the way the folders that reach the
+        /// screen do.
+        /// </remarks>
+        public static string AttachmentCopies
+        {
+            get { return EnsureDirectory(Path.Combine(Path.GetTempPath(), FolderName)); }
+        }
+
+        /// <summary>
         /// The per-person folder under AppData that the settings above live in.
         /// What is kept there belongs to the person rather than to the build, so
         /// a rebuild does not lose it.
@@ -117,7 +139,7 @@ namespace PCUserDetection
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "PCUserDetection");
+                    FolderName);
             }
         }
 

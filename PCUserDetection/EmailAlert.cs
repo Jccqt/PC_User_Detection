@@ -213,10 +213,7 @@ namespace PCUserDetection
             {
                 if (!File.Exists(photoPath)) return null;
 
-                string folder = Path.Combine(Path.GetTempPath(), "PCUserDetection");
-                Directory.CreateDirectory(folder);
-
-                string copy = Path.Combine(folder,
+                string copy = Path.Combine(AppPaths.AttachmentCopies,
                     string.Format("Anonymous_{0:yyyyMMdd_HHmmss_fff}.jpeg", DateTime.Now));
 
                 File.Copy(photoPath, copy, true);
