@@ -35,7 +35,18 @@ namespace PCUserDetection
         /// <summary>Holds the registered user images to compare against.</summary>
         public static string CapturedImages
         {
-            get { return EnsureDirectory(Path.Combine(ImageRoot, "CapturedImages")); }
+            get { return EnsureDirectory(CapturedImagesPath); }
+        }
+
+        /// <summary>
+        /// Names the same folder as <see cref="CapturedImages"/> without creating
+        /// it, for showing the path and for anything that must not raise when the
+        /// folder cannot be created. Reading it does not touch the disk in either
+        /// build layout, since the root it is built on is resolved by name too.
+        /// </summary>
+        public static string CapturedImagesPath
+        {
+            get { return Path.Combine(ImageRoot, "CapturedImages"); }
         }
 
         /// <summary>Where the chosen theme is remembered.</summary>
@@ -70,11 +81,20 @@ namespace PCUserDetection
         /// </summary>
         private static string UserFolder
         {
+            get { return EnsureDirectory(UserFolderPath); }
+        }
+
+        /// <summary>
+        /// Names <see cref="UserFolder"/> without creating it, so that resolving
+        /// where things live is separate from making the folder they live in.
+        /// </summary>
+        private static string UserFolderPath
+        {
             get
             {
-                return EnsureDirectory(Path.Combine(
+                return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "PCUserDetection"));
+                    "PCUserDetection");
             }
         }
 
@@ -111,7 +131,12 @@ namespace PCUserDetection
                 directory = directory.Parent;
             }
 
-            return UserFolder;
+            // named rather than created: this runs from a static field
+            // initializer, where a throw would come back as a
+            // TypeInitializationException from whatever first touched the class
+            // rather than as something a caller can report. The folder itself is
+            // made by whichever property is asked for a path to write to.
+            return UserFolderPath;
         }
 
         // a fresh clone or a cleaned build can be missing these, and creating

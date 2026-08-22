@@ -48,13 +48,6 @@ namespace PCUserDetection
         /// </summary>
         private int? imageCount;
 
-        /// <summary>
-        /// Where the registered images are kept, read once. Asking AppPaths for
-        /// it creates the folder if it has gone missing, which is not something
-        /// a paint handler should be doing on every repaint.
-        /// </summary>
-        private static readonly string ImageFolder = AppPaths.CapturedImages;
-
         public UserFaceDetector()
         {
             InitializeComponent();
@@ -714,11 +707,13 @@ namespace PCUserDetection
             }
 
             // the folder is not a hardcoded string: it is the project folder in a
-            // development build and one under AppData in a published one
+            // development build and one under AppData in a published one. The
+            // path is asked for by name rather than by the property that creates
+            // it, since a repaint has no business touching the disk.
             int room = pnlFolder.Width - x - lnkOpenFolder.Width - 8;
             if (room <= 0) return;
 
-            TextRenderer.DrawText(e.Graphics, ImageFolder, Theme.Mono,
+            TextRenderer.DrawText(e.Graphics, AppPaths.CapturedImagesPath, Theme.Mono,
                 new Rectangle(x, top, room, height), Theme.TextMuted, flags | TextFormatFlags.EndEllipsis);
         }
 
@@ -726,7 +721,10 @@ namespace PCUserDetection
         {
             try
             {
-                Process.Start(new ProcessStartInfo(ImageFolder) { UseShellExecute = true });
+                // this is the one place worth creating the folder from: asking for it
+                // brings back one that has gone missing, and a folder that cannot
+                // be created is reported below rather than thrown
+                Process.Start(new ProcessStartInfo(AppPaths.CapturedImages) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
