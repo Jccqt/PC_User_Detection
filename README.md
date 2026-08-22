@@ -64,7 +64,7 @@ ArcFace for generating embeddings. SCRFD is licensed for non-commercial
 research only, which limits what the app as a whole may be used for; see
 [Licence](#licence).
 
-[`FaceRecognizer`](PCUserDetection/FaceRecognizer.cs) does the work:
+[`FaceRecognizer`](PCUserDetection/Services/FaceRecognizer.cs) does the work:
 
 1. The captured frame is written to `AnonymousImages/Anonymous.jpeg`.
 2. A face is detected in that frame, aligned using its landmarks, and turned
@@ -136,35 +136,45 @@ again there.
 
 ```
 PCUserDetection/
-├── Program.cs               starts the app, and turns a crash into a sentence
-├── UserFaceDetector.cs      the window: navigation and the four screens
-├── SettingsPanel.cs         the Settings screen
-├── Theme.cs                 colours, fonts and button styles
-├── AppIcon.cs               the window icon, read from the embedded .ico
-├── CameraView.cs            the webcam feed and the frame it hands out
-├── ImageCard.cs             one registered image in the gallery
-├── RailButton.cs            one row of the navigation rail, with its count
-├── StatusLine.cs            the line that says what just happened
-├── FlatButton.cs            a button, filled or outlined
-├── TextField.cs             a line of text to type in
-├── ComboField.cs            a drop-down list
-├── CheckField.cs            a check box
-├── SpinField.cs             a whole number, with a step column
-├── FaceRecognizer.cs        face detection and embedding comparison
-├── EmailAlert.cs            whether a failed check becomes an email, and what it says
-├── EmailSender.cs           the transports: SMTP, and the folder used in its place
-├── EmailSettings.cs         the alert settings, and the encrypted password
-├── AppPaths.cs              resolves the image folders and the settings files
-├── Assets/                  the app icon, and the artwork it is drawn from
-├── AnonymousImages/         the most recent captured frame
-└── CapturedImages/          registered user images
+├── Program.cs                 starts the app, and turns a crash into a sentence
+├── Theme.cs                   colours, fonts and button styles
+├── AppIcon.cs                 the window icon, read from the embedded .ico
+├── Screens/
+│   ├── UserFaceDetector.cs    the window: navigation and the four screens
+│   └── SettingsPanel.cs       the Settings screen
+├── Controls/
+│   ├── CameraView.cs          the webcam feed and the frame it hands out
+│   ├── ImageCard.cs           one registered image in the gallery
+│   ├── RailButton.cs          one row of the navigation rail, with its count
+│   ├── StatusLine.cs          the line that says what just happened
+│   ├── FlatButton.cs          a button, filled or outlined
+│   ├── TextField.cs           a line of text to type in
+│   ├── ComboField.cs          a drop-down list
+│   ├── CheckField.cs          a check box
+│   └── SpinField.cs           a whole number, with a step column
+├── Services/
+│   ├── FaceRecognizer.cs      face detection and embedding comparison
+│   ├── EmailAlert.cs          whether a failed check becomes an email, and what it says
+│   ├── EmailSender.cs         the transports: SMTP, and the folder used in its place
+│   ├── EmailSettings.cs       the alert settings, and the encrypted password
+│   └── AppPaths.cs            resolves the image folders and the settings files
+├── Assets/                    the app icon, and the artwork it is drawn from
+├── AnonymousImages/           the most recent captured frame
+└── CapturedImages/            registered user images
 ```
+
+Three files sit above the folders because nothing owns them: `Program` starts
+the app, `Theme` holds the palette that every screen and control draws from,
+and `AppIcon` loads the icon the window wears. Everything in `Controls/` is
+painted from that palette rather than coloured by properties; see the note on
+that [below](#notes). One namespace, `PCUserDetection`, covers the lot — the
+folders group the files without the code having to name them.
 
 The four `*Field` controls and `FlatButton` are what the screens are built
 from, each painted from the palette rather than coloured by properties; see the
 note on that [below](#notes).
 
-Image paths are resolved in one place, [`AppPaths`](PCUserDetection/AppPaths.cs),
+Image paths are resolved in one place, [`AppPaths`](PCUserDetection/Services/AppPaths.cs),
 from the folder the executable lives in. Running from the source tree, it walks
 up to the folder holding `PCUserDetection.csproj` and keeps the two folders
 there, so a rebuild does not lose the images already registered. A published
@@ -174,9 +184,9 @@ app can always write. Both folders are created on demand if they are missing.
 The settings files live under `%APPDATA%` in either case.
 
 The alert is split so that the decision and the delivery stay apart:
-[`EmailAlert`](PCUserDetection/EmailAlert.cs) decides whether to send and writes
+[`EmailAlert`](PCUserDetection/Services/EmailAlert.cs) decides whether to send and writes
 the message, and an `IEmailSender` in
-[`EmailSender.cs`](PCUserDetection/EmailSender.cs) delivers it. Sending through
+[`EmailSender.cs`](PCUserDetection/Services/EmailSender.cs) delivers it. Sending through
 a provider's HTTP API instead would be another implementation of that
 interface, with nothing above it changing.
 
@@ -190,7 +200,7 @@ interface, with nothing above it changing.
   remembered in `%APPDATA%\PCUserDetection\theme.txt` for the next run.
 - Switching works because the designer only lays the window out. Every colour
   is applied by `ApplyTheme` in
-  [`UserFaceDetector.cs`](PCUserDetection/UserFaceDetector.cs), so re-theming
+  [`UserFaceDetector.cs`](PCUserDetection/Screens/UserFaceDetector.cs), so re-theming
   is a matter of choosing a palette and calling it again. A new control needs
   its colours set there, not in the designer.
 - **Auto** reads the Windows setting when it is chosen and when the app starts.
@@ -199,9 +209,9 @@ interface, with nothing above it changing.
 - The screens are docked rather than positioned by pixel, so the window can be
   resized and the camera feed grows with it.
 - The Settings screen uses real combo boxes, check boxes and text boxes, wrapped
-  in [`ComboField`](PCUserDetection/ComboField.cs),
-  [`CheckField`](PCUserDetection/CheckField.cs) and
-  [`TextField`](PCUserDetection/TextField.cs). Each of the three paints part of
+  in [`ComboField`](PCUserDetection/Controls/ComboField.cs),
+  [`CheckField`](PCUserDetection/Controls/CheckField.cs) and
+  [`TextField`](PCUserDetection/Controls/TextField.cs). Each of the three paints part of
   itself — a border, a drop arrow, a tick — in a system colour that no property
   turns off, which looks wrong against the dark palette. Clipping that away and
   drawing it from the palette keeps the keyboard and screen reader behaviour the
