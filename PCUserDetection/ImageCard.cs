@@ -177,9 +177,19 @@ namespace PCUserDetection
 
         private static bool TryReadCapture(string name, out DateTime taken)
         {
+            const string prefix = "Image_";
+            const int momentLength = 15; // yyyyMMdd_HHmmss
+
             taken = DateTime.MinValue;
 
-            return name.StartsWith("Image_") && DateTime.TryParseExact(name.Substring(6), "yyyyMMdd_HHmmss",
+            if (!name.StartsWith(prefix) || name.Length < prefix.Length + momentLength) return false;
+
+            // a photo registered in a second that already had one carries a count
+            // after the moment, which is no part of when it was taken
+            string count = name.Substring(prefix.Length + momentLength);
+            if (count.Length > 0 && count[0] != '_') return false;
+
+            return DateTime.TryParseExact(name.Substring(prefix.Length, momentLength), "yyyyMMdd_HHmmss",
                 CultureInfo.InvariantCulture, DateTimeStyles.None, out taken);
         }
 

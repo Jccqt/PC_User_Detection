@@ -533,11 +533,7 @@ namespace PCUserDetection
         {
             try
             {
-                string filename = string.Format("Image_{0:yyyyMMdd_HHmmss}.jpeg", DateTime.Now);
-                frame.Save(Path.Combine(AppPaths.CapturedImages, filename),
-                    System.Drawing.Imaging.ImageFormat.Jpeg);
-
-                SetStatus("Saved.", filename, StatusKind.Good, true);
+                SetStatus("Saved.", WriteRegisteredImage(frame), StatusKind.Good, true);
                 RefreshGallery();
             }
             catch (Exception ex)
@@ -546,6 +542,41 @@ namespace PCUserDetection
                 Console.WriteLine(ex);
                 MessageBox.Show("The photo could not be saved.\n\n" + ex.Message,
                     "PC User Detection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Writes the frame under the moment it was taken, and returns the name
+        /// it went under. That moment is only named down to the second, so two
+        /// photos registered within the same second are told apart by a count on
+        /// the end rather than the second one quietly replacing the first.
+        /// </summary>
+        private static string WriteRegisteredImage(Bitmap frame)
+        {
+            string moment = string.Format("Image_{0:yyyyMMdd_HHmmss}", DateTime.Now);
+
+            for (int taken = 1; ; taken++)
+            {
+                string filename = (taken == 1 ? moment : moment + "_" + taken) + ".jpeg";
+                string path = Path.Combine(AppPaths.CapturedImages, filename);
+
+                try
+                {
+                    // CreateNew rather than asking first whether the name is free,
+                    // so nothing can take it between the question and the write
+                    using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+                    {
+                        frame.Save(file, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    }
+
+                    return filename;
+                }
+                catch (IOException)
+                {
+                    // a disk with no room left on it fails the same way as a name
+                    // already taken, and only the second is worth another name
+                    if (!File.Exists(path)) throw;
+                }
             }
         }
 
