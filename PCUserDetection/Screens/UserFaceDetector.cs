@@ -173,10 +173,8 @@ namespace PCUserDetection
 
             if (cameraListFailed || cameras.Count == 0)
             {
-                string only = cameraListFailed ? "Camera unavailable" : "No camera found";
-                cboCamera.Add(only, only);
-                cboCamera.SelectedIndex = 0;
-                cboCamera.Enabled = false;
+                // the camera picker is hidden along with its slot in this state,
+                // so the reason goes on the preview, where it can be seen
                 cameraView.Placeholder = cameraListFailed
                     ? "The cameras on this PC could not be listed."
                     : "No camera was found. Connect one and restart the app.";
