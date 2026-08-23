@@ -116,7 +116,11 @@ namespace PCUserDetection
         /// </remarks>
         public static string AttachmentCopies
         {
-            get { return EnsureDirectory(Path.Combine(Path.GetTempPath(), FolderName)); }
+            get
+            {
+                return EnsureDirectory(
+                    attachmentRoot ?? Path.Combine(Path.GetTempPath(), FolderName));
+            }
         }
 
         /// <summary>
@@ -137,10 +141,50 @@ namespace PCUserDetection
         {
             get
             {
+                if (userRoot != null) return userRoot;
+
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     FolderName);
             }
+        }
+
+        /// <summary>Stands in for the AppData folder, or null to use the real one.</summary>
+        private static string userRoot;
+
+        /// <summary>Stands in for the temp folder, or null to use the real one.</summary>
+        private static string attachmentRoot;
+
+        /// <summary>
+        /// Points the folders this class writes to at <paramref name="root"/>
+        /// instead of the signed-in account's.
+        /// </summary>
+        /// <remarks>
+        /// A seam for the tests, and only for them: nothing in the app calls it,
+        /// and nothing on a screen reaches it. It is here because these folders
+        /// cannot be moved from outside the process. Windows resolves AppData
+        /// from the account rather than from the environment, so a test with no
+        /// way to move it would be reading the settings file that is actually in
+        /// use and writing over it, and exercising folder delivery would leave
+        /// messages in the folder a person keeps their real ones in.
+        ///
+        /// The two image folders are deliberately not covered. They hang off a
+        /// root resolved once when the class is first touched, and moving them
+        /// afterwards would describe a layout the app never runs in.
+        /// </remarks>
+        internal static void RedirectToSandbox(string root)
+        {
+            // kept apart under the sandbox the way they are apart on a real
+            // machine, so nothing can pass by landing in one folder together
+            userRoot = Path.Combine(root, "AppData");
+            attachmentRoot = Path.Combine(root, "Temp");
+        }
+
+        /// <summary>Puts the folders back where the app keeps them.</summary>
+        internal static void ClearSandbox()
+        {
+            userRoot = null;
+            attachmentRoot = null;
         }
 
         /// <summary>The frame captured by the Capture button.</summary>

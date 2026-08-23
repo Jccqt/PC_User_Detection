@@ -56,6 +56,22 @@ namespace PCUserDetection
         /// </summary>
         private static DateTime lastSentUtc = DateTime.MinValue;
 
+        /// <summary>Forgets when the last alert went out, so the cooldown starts over.</summary>
+        /// <remarks>
+        /// A seam for the tests, and only for them: one test sending leaves the
+        /// cooldown running for the next, which would then be reading a decision
+        /// the test before it made. The app has no reason to call this, since
+        /// starting it fresh clears the field anyway, which is the one case the
+        /// cooldown is meant to forget.
+        ///
+        /// A method that clears rather than a setter that assigns, so that the
+        /// moment an alert went out stays something only sending one can say.
+        /// </remarks>
+        internal static void ForgetLastSent()
+        {
+            lastSentUtc = DateTime.MinValue;
+        }
+
         /// <summary>
         /// Emails the frame that failed the check, unless the settings say not to
         /// or an alert has already gone out inside the cooldown.
