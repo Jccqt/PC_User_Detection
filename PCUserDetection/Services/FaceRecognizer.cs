@@ -60,11 +60,8 @@ namespace PCUserDetection
 
             foreach (string userImage in imageFiles)
             {
-                // a registered image is a portrait of one person, so only its largest
-                // face counts; one without a detectable face is skipped rather than
-                // aborting the comparison against the remaining images
-                List<float[]> userEmbeddings = GenerateEmbeddings(userImage, true);
-                if (userEmbeddings.Count > 0) registeredEmbeddings.Add(userEmbeddings[0]);
+                float[] userEmbedding = ReadRegisteredEmbedding(userImage);
+                if (userEmbedding != null) registeredEmbeddings.Add(userEmbedding);
             }
 
             // everyone in the frame has to be someone registered: a stranger standing
@@ -72,6 +69,28 @@ namespace PCUserDetection
             return anonymousEmbeddings.All(anonymousEmbedding => registeredEmbeddings.Any(
                 userEmbedding => FaceAiSharp.Extensions.GeometryExtensions.Dot(
                     anonymousEmbedding, userEmbedding) >= MatchThreshold));
+        }
+
+        /// <summary>
+        /// Returns the embedding of the face in a registered image, or null when there
+        /// is none to read. A registered image is a portrait of one person, so only its
+        /// largest face counts.
+        /// </summary>
+        private float[] ReadRegisteredEmbedding(string imagePath)
+        {
+            try
+            {
+                List<float[]> embeddings = GenerateEmbeddings(imagePath, true);
+                return embeddings.Count > 0 ? embeddings[0] : null;
+            }
+            catch (Exception ex)
+            {
+                // the file is empty, truncated or not an image at all; it is skipped
+                // for the same reason one without a detectable face is, rather than
+                // aborting the comparison against the remaining images
+                Console.WriteLine(ex);
+                return null;
+            }
         }
 
         /// <summary>
