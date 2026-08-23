@@ -41,6 +41,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The services are internal, since nothing outside this assembly builds
+         against them. The test project is the one exception: it exercises them
+         directly, and making them public to allow that would advertise an API
+         the app does not have. -->
+    <InternalsVisibleTo Include="PCUserDetection.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="FaceAiSharp.Bundle" Version="0.5.23" />
     <PackageReference Include="MailKit" Version="4.17.0" />
